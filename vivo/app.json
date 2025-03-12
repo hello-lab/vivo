@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "vivo",
+    "slug": "vivo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+   
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.vivo"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [ "expo-font", {
+        "fonts": [
+          {
+            "fontFamily": "HeadingNow",
+            "fontStyle": "normal",
+            "fontWeight": "400",
+            "src": "./assets/fonts/HeadingNowTrial-68Heavy.ttf"
+          },
+          {
+            "fontFamily": "SpaceMono",
+            "fontStyle": "normal",
+            "fontWeight": "400",
+            "src": "./assets/fonts/SpaceMono-Regular.ttf"
+          },
+          {
+            "fontFamily": "Roboto",
+            "fontStyle": "normal",
+            "fontWeight": "700",
+            "src": "./assets/fonts/Roboto-Bold.ttf"
+          }
+        ]
+      }]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
