@@ -5,7 +5,7 @@ import { Tabs } from 'expo-router/tabs';
 import { Drawer } from 'expo-router/drawer';
 import {useFonts} from "expo-font"
 import { useEffect } from "react"
-import { StyleSheet,View,Button } from "react-native"
+import { StyleSheet,View,Button,TouchableOpacity } from "react-native"
 export default function RootLayout(){
     const [fontsLoaded] = useFonts( {
         "HeadingNow":require("../../assets/fonts/HeadingNowTrial-68Heavy.ttf"),
@@ -83,8 +83,11 @@ useEffect(()=>{
     right: 0,
     padding: 16,
   }}>
+    ///
             <Button color="red" title=" S.O.S." onPress={() => router.push('/modal')} />
             </View>
+
+
     </View>
 
 }

@@ -5,7 +5,8 @@ import { Link, router} from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
-
+import SendSMS from 'react-native-sms'
+  import * as SMS from 'expo-sms';
 export default function Modal() {
   const isPresented = router.canGoBack();
   const [username, setUsername] = useState('');
@@ -22,6 +23,16 @@ export default function Modal() {
     console.log('11')
     RNImmediatePhoneCall.immediatePhoneCall('98325');
   }
+
+
+  const smss = async () => {
+    const { result } = await SMS.sendSMSAsync(
+      ['0123456789', '9876543210'], // Recipients
+      'This is a distress message!'
+    );
+  
+    console.log(result); // 'sent' or 'cancelled'
+  };
   return (
     <View style={styles.container}>
       <View style={{alignItems: 'left',position: 'fixed', top: -50, left: 0, padding: 10}}>
@@ -47,7 +58,7 @@ export default function Modal() {
         <TouchableOpacity style={styles.bttn} >
           
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btn1} onPress={call}>
+        <TouchableOpacity style={styles.btn1} onPress={smss}>
         <MaterialCommunityIcons name="message-arrow-right" size={65} color="white" />
           <Text style={styles.btnText}>SEND DISTRESS MESSAGE</Text>
         </TouchableOpacity>

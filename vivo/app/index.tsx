@@ -13,7 +13,7 @@ const Index = () => {
     const requestPermissions = async () => {
       try {
        
-    
+        
        
         // Start background service
         AppBlockServiceStarter.startService();

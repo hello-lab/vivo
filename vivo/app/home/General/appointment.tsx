@@ -32,14 +32,7 @@ export default  function HomeScren() {
     <SafeAreaView style={styles.fullh}>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Welcome, {username}!</Text>
-            <View style={{
-    position: 'absolute',
-    bottom: 0, 
-    right: 0,
-    padding: 16,
-  }}>
-            <Button color="red" title=" S.O.S." onPress={() => router.push('/modal')} />
-            </View>
+           
     </ScrollView>
     </SafeAreaView>
   );

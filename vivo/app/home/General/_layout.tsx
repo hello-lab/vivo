@@ -84,6 +84,15 @@ useEffect(()=>{
     title: 'Web Usage',
   }}
 />
+<Drawer.Screen
+  name="profile" // This is the name of the page and must match the url from root
+  options={{
+    drawerLabel: 'Profile',
+    headerStyle: styles.header,
+    headerTitleStyle: styles.headerText,
+    title: 'Profile',
+  }}
+/>
       </Drawer>
 
 
