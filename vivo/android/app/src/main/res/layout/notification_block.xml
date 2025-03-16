@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="@android:color/white">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@android:drawable/ic_dialog_alert"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/notificationTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Restricted App Blocked"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_toEndOf="@id/icon"
+        android:layout_marginStart="10dp"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/notificationMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You are not allowed to open this app."
+        android:textSize="14sp"
+        android:layout_below="@id/notificationTitle"
+        android:layout_toEndOf="@id/icon"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp" />
+</RelativeLayout>
