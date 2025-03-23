@@ -10,13 +10,18 @@ import SendSMS from 'react-native-sms'
 export default function Modal() {
   const isPresented = router.canGoBack();
   const [username, setUsername] = useState('');
+  const [numbers, setNumbers] = useState('');
+
   useEffect(  () => {
     PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CALL_PHONE
     ).then((d) => {console.log(d)})
    AsyncStorage.getItem('username').then((value) => {
-    console.log(value);
+ 
     setUsername(String(value));
+    const storedNumbers =  AsyncStorage.getItem('numbers');
+                if (storedNumbers) setNumbers(JSON.parse(storedNumbers));
+    console.log('jj'+storedNumbers)
   })})
 
   const call=()=>{
@@ -26,8 +31,9 @@ export default function Modal() {
 
 
   const smss = async () => {
+    console.log(numbers)
     const { result } = await SMS.sendSMSAsync(
-      ['0123456789', '9876543210'], // Recipients
+      numbers, // Recipients
       'This is a distress message!'
     );
   

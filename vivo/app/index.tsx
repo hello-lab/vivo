@@ -17,6 +17,7 @@ const Index = () => {
        
         // Start background service
         AppBlockServiceStarter.startService();
+        
       } catch (error) {
         console.error('Error requesting permissions:', error);
       }
@@ -29,7 +30,7 @@ const Index = () => {
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to Vivo</Text>
       <Button title="Sign In" onPress={() => router.push('/signin')} />
-      <Button  title="help" onPress={() => router.push('/modal')} />
+      <Button  title="help" onPress={() => router.push('/home/General/heartrate')} />
     </View>
   );
 };
