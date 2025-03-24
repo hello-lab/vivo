@@ -1,168 +1,147 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, Button, Alert, StyleSheet } from 'react-native';
-import { Camera, CameraView, CameraType } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
-import { FFmpegKit } from 'ffmpeg-kit-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
+import { Camera, useCameraDevice, useFrameProcessor,useCameraFormat } from 'react-native-vision-camera';
 import FFT from 'fft.js';
-import { Buffer } from 'buffer';
-import cropAndConvertToUint8ClampedArray from '../../../components/HeartRateAnalyzer';
+import { useIsFocused } from '@react-navigation/native';
+import { useRunOnJS } from 'react-native-worklets-core';
+import CircularProgress from 'react-native-circular-progress-indicator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Ensure Buffer is polyfilled for React Native
-if (typeof Buffer === 'undefined') {
-  global.Buffer = require('buffer').Buffer;
-}
+const arrLen = 256;
+const normFactor = 1 / (200 * 200 * 25);
+const maxBPMHistory = 1544;
+const fps = 30;
 
-const tempDir = `${FileSystem.cacheDirectory}frames/`;
-const arrLen = 256; // FFT length
-const normFactor = 1 / (100 * 100 * 25);
-const maxBPMHistory = 100;
+const calculationDuration = 60 * 1000; // 60 seconds
 
 const HeartRateProcessor = () => {
-  const [bpm, setBPM] = useState<any | null>('-');
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
+  const device = useCameraDevice('back');
+  const format = useCameraFormat(device, [
+    { fps: fps }
+  ])
+  const fpss = format // <-- 240 FPS, or lower if 240 FPS is not available
+  
+  const cameraRef = useRef(null);
+  const [bpm, setBPM] = useState<number | null>(null);
+  const [frameSumArr, setFrameSumArr] = useState<number[]>([]);
+  const [bpmHistory, setBpmHistory] = useState<number[]>([0]);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [finalBPM, setFinalBPM] = useState<number | null>(null);
   const [torchOn, setTorchOn] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
-  let frameSumArr: number[] = [];
-  let bpmHistory: number[] = [];
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
 
-  // --- Request CameraView Permissions ---
-  const requestCameraPermission = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    setHasPermission(status === 'granted');
+  const isFocused = useIsFocused();
+  const isActive = isFocused && cameraVisible;
+
+  // Animation for Camera Open/Close
+  const cameraScale = useRef(new Animated.Value(0)).current;
+
+  // --- Start Camera Animation ---
+  const openCamera = () => {
+    Animated.timing(cameraScale, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+    setCameraVisible(true);
   };
-  const requestCameraPermission1 = async () => {
-    const { status } = await Camera.requestMicrophonePermissionsAsync();
-    setHasPermission(status === 'granted');
+
+  // --- Close Camera Animation ---
+  const closeCamera = () => {
+    Animated.timing(cameraScale, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => setCameraVisible(false));
   };
-  React.useEffect(() => {
-    requestCameraPermission();
-    requestCameraPermission1();
+
+  // --- Start Timer ---
+  const startTimer = () => {
+    setIsStarted(true);
+    openCamera();
+    setElapsedTime(0);
+  };
+
+  // --- Stop Timer ---
+  const stopTimer = () => {
+    setIsStarted(false);
+    closeCamera();
+  };
+
+  // --- Timer Logic ---
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isStarted && elapsedTime < calculationDuration) {
+      timer = setInterval(() => {
+        setElapsedTime((prevTime) => prevTime + 1000);
+      }, 1000);
+    } else if (elapsedTime >= calculationDuration) {
+      const weightedBPM = calculateWeightedAverageBPM(bpmHistory);
+      setFinalBPM(Math.round(weightedBPM));
+      saveMeanHeartRate(weightedBPM); // Save mean heart rate
+      softreset(); // Auto-stop after 60s
+    }
+    return () => clearInterval(timer);
+  }, [isStarted, elapsedTime]);
+
+  // --- Check Camera Permissions ---
+  useEffect(() => {
+    (async () => {
+      const cameraPermission = await Camera.requestCameraPermission();
+      if (cameraPermission !== 'granted') {
+        alert('Camera permission is required!');
+      }
+    })();
   }, []);
 
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
-
-  // --- Start Video Recording ---
-  const startRecording = async () => {
-    if (cameraRef.current) {
-      try {
-        setIsRecording(true);
-
-        const video = await cameraRef.current.recordAsync();
-
-        setBPM('🎥 Video recorded:', video.uri);
-        setIsRecording(false);
-
-        // Process the recorded video
-        await processVideo(video.uri);
-      } catch (error) {
-        console.error('❌ Error recording video:', error);
-        Alert.alert('Error', 'Failed to record video.');
-        setIsRecording(false);
+  // --- Push Data using RunOnJS ---
+  const updateFrameSumArr = useRunOnJS((videoDataSum) => {
+    setFrameSumArr((prevArr) => {
+      const newArr = [...prevArr, videoDataSum];
+      console.log(newArr.length);
+      if (newArr.length > arrLen) {
+        newArr.shift();
+        calculateFFT(newArr);
       }
-    }
-  };
-
-  // --- Stop Video Recording ---
-  const stopRecording = () => {
-    if (cameraRef.current && isRecording) {
-      cameraRef.current.stopRecording();
-    }
-  };
-
-  // --- Process Video and Extract Frames ---
-  const processVideo = async (videoUri: string) => {
-    try {
-      // Create or clear temp directory
-      const dirInfo = await FileSystem.getInfoAsync(tempDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
-      } else {
-        const files = await FileSystem.readDirectoryAsync(tempDir);
-        for (const file of files) {
-          await FileSystem.deleteAsync(`${tempDir}${file}`);
-        }
-      }
-
-      // Extract frames using FFmpeg
-      const command = `-i ${videoUri} -v quiet -vf "fps=30" ${tempDir}frame-%04d.png`;
-       setBPM('🛠️ Running FFmpeg: '+ command);
-      const session = await FFmpegKit.execute(command);
-      const returnCode = await session.getReturnCode();
-
-      if (returnCode?.isValueSuccess()) {
-        setBPM('✅ Frames extracted successfully!');
-        await processAllFrames();
-      } else {
-        Alert.alert('Error', 'Failed to extract frames.');
-      }
-    } catch (error) {
-      console.error('❌ Error processing video:', error);
-      Alert.alert('Error', 'Failed to process video.');
-    }
-  };
-
-  // --- Process All Frames ---
-  const processAllFrames = async () => {
-    const frameFiles = await FileSystem.readDirectoryAsync(tempDir);
-    console.log(`🖼️ Processing ${frameFiles.length} frames...`);
-
-    for (const frameFile of frameFiles) {
-      //  console.log(frameFile)
-      await processFrame(`${tempDir}${frameFile}`);
-    }
-
-    // Calculate and display final BPM
-    calculateAndDisplayBPM();
-    clearTempFrames();
-  };
-
-  // --- Process Single Frame ---
-  const processFrame = async (framePath: string) => {
-    const imgData = await FileSystem.readAsStringAsync(framePath, {
-      encoding: FileSystem.EncodingType.Base64,
+      return newArr;
     });
+  }, []);
 
-    const videoData = await cropAndConvertToUint8ClampedArray(
-      imgData,
-      100,
-      100,
-      100,
-      100
-    );
+  // --- Process Each Frame ---
+  const onFrameProcessed = useFrameProcessor((frame) => {
+    'worklet';
+    if (frame && frame.width > 0 && frame.height > 0) {
+      const buffer = frame.toArrayBuffer();
+      const videoData = new Uint8Array(buffer);
 
-    let videoDataSum = videoData.reduce((a, b) => a + b, 0);
-    videoDataSum = videoDataSum * normFactor;
+      let videoDataSum = videoData.reduce((a, b) => a + b, 0);
+      videoDataSum *= normFactor;
 
-    frameSumArr.push(videoDataSum);
-    if (frameSumArr.length > arrLen) {
-      frameSumArr.shift();
-      calculateFFT();
+      updateFrameSumArr(videoDataSum);
     }
-  };
+  }, []);
 
-  // --- Calculate FFT and BPM ---
-  const calculateFFT = () => {
-    if (frameSumArr.length < arrLen) return;
-
+  // --- FFT to Calculate BPM ---
+  const calculateFFT = (data: number[]) => {
     const fft = new FFT(arrLen);
-    const input = frameSumArr.slice(0, arrLen);
     const out = fft.createComplexArray();
-    fft.realTransform(out, input);
+    fft.realTransform(out, data);
     fft.completeSpectrum(out);
 
     let maxInd = 0;
     let maxVal = 0;
     const lowerBound = 40 / 60;
     const upperBound = 180 / 60;
-    const freqResolution = 30 / arrLen;
+    const freqResolution = fps / arrLen;
 
-    for (let i = 0; i < out.length / 2; i++) {
+    for (let i = 1; i < arrLen / 2; i++) {
       const freq = i * freqResolution;
       const magnitude = Math.sqrt(out[2 * i] ** 2 + out[2 * i + 1] ** 2);
 
@@ -172,70 +151,147 @@ const HeartRateProcessor = () => {
       }
     }
 
-    const bpmCandidate = (maxInd * 30 / arrLen) * 60;
+    const bpmCandidate = maxInd * freqResolution * 60;
+    setBPM(Math.round(bpmCandidate));
+
     if (bpmCandidate >= 40 && bpmCandidate <= 180) {
-      bpmHistory.push(bpmCandidate);
-      setBPM(String(bpmCandidate));
+      setBpmHistory((prevHistory) => {
+        const newHistory = [bpmCandidate, ...prevHistory];
+        if (newHistory.length > maxBPMHistory) {
+          newHistory.shift();
+        }
+        return newHistory;
+      });
     }
   };
 
-  // --- Calculate and Display BPM ---
-  const calculateAndDisplayBPM = () => {
-    const meanBPM = calculateWeightedAverageBPM();
-    console.log(`📊 Mean BPM: ${Math.round(meanBPM)} BPM`);
-    setBPM(Math.round(meanBPM));
-  };
-
-  // --- Calculate Weighted Average BPM ---
-  const calculateWeightedAverageBPM = () => {
+  // --- Final Weighted Average ---
+  const calculateWeightedAverageBPM = (bpmHistory: number[]) => {
     if (bpmHistory.length === 0) return 0;
-
     const weights = bpmHistory.map((_, index) => index + 1);
     const weightedSum = bpmHistory.reduce((sum, bpm, index) => sum + bpm * weights[index], 0);
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-
     return weightedSum / totalWeight;
   };
 
-  // --- Clear Temporary Frames ---
-  const clearTempFrames = async () => {
+  // --- Save Mean Heart Rate ---
+  const saveMeanHeartRate = async (meanHeartRate: number) => {
     try {
-      const files = await FileSystem.readDirectoryAsync(tempDir);
-      for (const file of files) {
-        await FileSystem.deleteAsync(`${tempDir}${file}`);
-      }
-      console.log('🗑️ Temp frames deleted successfully!');
+      const timestamp = new Date().toISOString();
+      const newEntry = { meanHeartRate, timestamp };
+      const existingData = await AsyncStorage.getItem('heartRateHistory');
+      const heartRateHistory = existingData ? JSON.parse(existingData) : [];
+      heartRateHistory.push(newEntry);
+      await AsyncStorage.setItem('heartRateHistory', JSON.stringify(heartRateHistory));
+      console.log('Mean heart rate saved successfully!',heartRateHistory);
     } catch (error) {
-      console.warn('⚠️ Error clearing temp frames:', error);
+      console.error('Failed to save mean heart rate:', error);
     }
+  };
+
+  // --- Reset BPM and Timer ---
+  const resetBPM = () => {
+    setBpmHistory([0]);
+    setFrameSumArr([]);
+    setBPM(null);
+    setFinalBPM(null);
+    setElapsedTime(0);
+    stopTimer();
+  };
+  const softreset = () => {
+    setBpmHistory([0]);
+    setFrameSumArr([]);
+    setBPM(null);
+    //setFinalBPM(null);
+    setElapsedTime(0);
+    stopTimer();
   };
 
   // --- Toggle Torch ---
   const toggleTorch = () => {
-    setTorchOn(!torchOn);
+    setTorchOn((prevTorch) => !prevTorch);
+  };
+
+  // --- Format Elapsed Time ---
+  const formatElapsedTime = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes}:${seconds.padStart(2, '0')}`;
   };
 
   return (
     <View style={styles.container}>
-      {hasPermission === true && (
-        <CameraView enableTorch={torchOn} mode="video" ref={cameraRef} style={styles.camera} facing='back' />
+      {/* Circular Progress Bar */}
+      
+
+      {/* Animated Camera View */}
+      {cameraVisible && (
+        <Animated.View
+          style={[
+            styles.cameraContainer,
+            { transform: [{ scale: cameraScale }] },
+          ]}
+        >
+          {device && (
+            <Camera
+              ref={cameraRef}
+              style={styles.camera}
+              device={device}
+              isActive={isActive && elapsedTime < calculationDuration}
+              frameProcessor={onFrameProcessed}
+              pixelFormat="rgb"
+              fps={fpss}
+              torch={torchOn ? 'on' : 'off'}
+            />
+          )}
+        </Animated.View>
       )}
-      <View style={styles.controls}>
-        <View style={styles.buttonContainer}>
-          <Button
-            title={isRecording ? 'Stop Recording' : 'Start Recording'}
-            onPress={isRecording ? stopRecording : startRecording}
-            color={isRecording ? 'red' : 'green'}
-          />
-        </View>
-        <View style={styles.buttonContainer}>
-          <Button
-            title={torchOn ? 'Turn Torch Off' : 'Turn Torch On'}
-            onPress={toggleTorch}
-            color={torchOn ? 'orange' : 'lightblue'}
-          />
-        </View>
-        <Text style={styles.bpmText}>❤️ BPM: {bpm}</Text>
+
+      {/* Start/Stop Button */}
+      {!isStarted ? (
+        <TouchableOpacity style={styles.startButton} onPress={startTimer}>
+          <Text style={styles.buttonText}>▶️ Start</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.stopButton} onPress={stopTimer}>
+          <Text style={styles.buttonText}>⏹️ Stop</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* BPM Display */}
+      <Text style={styles.bpmText}>
+        {elapsedTime >= calculationDuration
+          ? `✅ Final Weighted BPM:`
+          : `❤️ BPM:`}
+          <Text style={styles.bppmText}>
+          {elapsedTime >= calculationDuration
+          ? ` ${finalBPM || '--'}`
+          : ` ${bpm || '--'}`}
+          </Text>
+      </Text>
+
+      {/* Torch and Reset Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={toggleTorch}>
+          <Text style={styles.buttonText}>
+            {torchOn ? '🔦 Torch Off' : '💡 Torch On'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={resetBPM}>
+          <Text style={styles.buttonText}>🔄 Reset</Text>
+        </TouchableOpacity>
+        <CircularProgress
+          value={(elapsedTime ) / 1000}
+          radius={20}
+          duration={60}
+          progressValueColor="#4b7bec"
+          activeStrokeColor="#4b7bec"
+          inActiveStrokeColor="#dfe6e9"
+          inActiveStrokeOpacity={0.5}
+          maxValue={60}
+          
+          titleStyle={{ fontSize: 26, color: '#576574' }}
+        />
       </View>
     </View>
   );
@@ -243,25 +299,79 @@ const HeartRateProcessor = () => {
 
 export default HeartRateProcessor;
 
-// --- Styles ---
 const styles = StyleSheet.create({
   container: {
+    fontFamily: 'HeadingNow',
     flex: 1,
-    justifyContent: 'flex-end',
+    backgroundColor: '#f1f2f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraContainer: {
+    fontFamily: 'HeadingNow',
+
+    width: 350,
+    height: 300,
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+    marginVertical: 20,
   },
   camera: {
+    fontFamily: 'HeadingNow',
+
     flex: 1,
   },
-  controls: {
-    backgroundColor: 'rgba(60, 105, 136, 0.5)',
-    padding: 20,
+  startButton: {
+    fontFamily: 'HeadingNow',
+
+    backgroundColor: 'rgb(112, 183, 231)',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
   },
-  buttonContainer: {
-    marginVertical: 10,
+  stopButton: {
+    fontFamily: 'HeadingNow',
+
+    backgroundColor: 'rgb(235, 130, 118)',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
   },
   bpmText: {
+    fontFamily: 'HeadingNow',
+
+    fontSize: 22,
+    color: '#ff4757',
     marginTop: 20,
-    fontSize: 18,
+  },
+  bppmText: {
+    fontFamily: 'SpaceMono',
+
+    fontSize: 22,
+    color: '#ff4757',
+    marginTop: 20,
+  },
+  buttonContainer: {
+    fontFamily: 'HeadingNow',
+
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  button: {
+    fontFamily: 'HeadingNow',
+
+    backgroundColor: '#576574',
+    padding: 15,
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontFamily: 'HeadingNow',
+
     color: '#fff',
+   
   },
 });

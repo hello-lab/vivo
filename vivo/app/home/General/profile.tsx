@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LineChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
+
 
 export default function HomeScreen() {
     const [username, setUsername] = useState('');
     const [numbers, setNumbers] = useState<number[]>([]);
     const [newNumber, setNewNumber] = useState('');
     const [restricted, setRestricted] = useState('');
+    const [heartrate, setHeartrate] = useState<{ meanHeartRate: number; timestamp: string }[]>([]);
+    const [styless, setStyles] = useState({});
     const [email, setEmail] = useState('');
     useEffect(() => {
         async function fetchData() {
@@ -20,7 +25,8 @@ export default function HomeScreen() {
                 if (storedNumbers) setNumbers(JSON.parse(storedNumbers));
                 const restricted = await AsyncStorage.getItem('restrictedApps');
                 if (restricted) setRestricted(JSON.parse(restricted))
-                
+                    const existingData = await AsyncStorage.getItem('heartRateHistory');
+                setHeartrate(existingData ? JSON.parse(existingData) : [])
             } catch (error) {
                 console.error(error);
             }
@@ -59,6 +65,7 @@ export default function HomeScreen() {
 
                             
                         </View>
+
                         <View style={styles.section}>
                             <Text style={styles.subtitle}>Restricted Apps</Text>
                             <View style={styles.numbersContainer}>
@@ -76,6 +83,73 @@ export default function HomeScreen() {
 
                             
                         </View>
+                        <View style={styles.section}>
+    <Text style={styles.subtitle}>Heart Rate Data</Text>
+    {heartrate.length === 0 ? (
+        <Text style={styles.noNumbersText}>No Data added yet.</Text>
+    ) : (
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false} // Optional to hide the scroll bar
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+        >
+            <LineChart
+                data={{
+                    labels: heartrate.map((item) =>
+                        new Date(item.timestamp).toLocaleString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })
+                    ),
+                    datasets: [
+                        {
+                            data: heartrate.map((item) => item.meanHeartRate),
+                            color: (opacity = 1) => `rgb(255, 105, 105)`,
+                            strokeWidth: 2,
+                        },
+                    ],
+                }}
+                width={Math.max(Dimensions.get('window').width - 40, heartrate.length * 50)} // ✅ Dynamic width based on data
+                height={620}
+                yAxisSuffix=" bpm"
+                verticalLabelRotation={80}
+                xLabelsOffset={-10}
+                yLabelsOffset={-1}
+                fromZero={true}
+                segments={6}
+                bezier
+               
+                chartConfig={{
+                    backgroundColor: 'rgba(241, 231, 231, 0.68)',
+                    backgroundGradientFrom: 'rgb(61, 61, 61)',
+                    backgroundGradientTo: 'rgb(37, 39, 39)',
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                        fontFamily: 'SpaceMono',
+                        fontSize: 13,
+                    },
+                    color: (opacity = 1) => `rgb(104, 190, 224)`,
+                    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    style: {
+                        borderRadius: 10,
+                    },
+                    propsForDots: {
+                        r: '3',
+                        strokeWidth: '2',
+                        stroke: '#ffa726',
+                    },
+                }}
+                style={{
+                    borderRadius: 10,
+                }}
+            />
+        </ScrollView>
+    )}
+</View>
+
+
                         <View style={styles.section}>
                             <Text style={styles.subtitle}>Emergency Numbers</Text>
                             <View style={styles.numbersContainer}>
