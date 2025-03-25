@@ -203,7 +203,7 @@ const HeartRateProcessor = () => {
     setFrameSumArr([]);
     setBPM(null);
     //setFinalBPM(null);
-    setElapsedTime(0);
+    //setElapsedTime(0);
     stopTimer();
   };
 
