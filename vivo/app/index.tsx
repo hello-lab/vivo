@@ -16,7 +16,7 @@ const Index = () => {
         
        
         // Start background service
-        //AppBlockServiceStarter.startService();
+        AppBlockServiceStarter.startService();
         
       } catch (error) {
         console.error('Error requesting permissions:', error);
