@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import android.content.SharedPreferences
 import org.json.JSONArray
 import android.database.sqlite.SQLiteDatabase
+import android.content.pm.ServiceInfo
 
 class AppBlockService : Service() {
 
@@ -98,10 +99,16 @@ class AppBlockService : Service() {
 
         val notification = NotificationCompat.Builder(this, notificationChannelId)
             .setContentTitle("App Block Service Running")
-            .setContentText("Monitoring blocked apps.")
+            .setContentText("Blocking Distracting Apps.")
             .build()
 
-        startForeground(1, notification)
+        startForeground(1, notification, 
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+
+        } else {
+            0
+        },)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
