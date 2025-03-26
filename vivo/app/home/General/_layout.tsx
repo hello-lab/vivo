@@ -102,6 +102,15 @@ useEffect(()=>{
     title: 'Heart Rate',
   }}
 />
+<Drawer.Screen
+  name="heartrate3" // This is the name of the page and must match the url from root
+  options={{
+    drawerLabel: 'Heart Rate(BEST)',
+    headerStyle: styles.header,
+    headerTitleStyle: styles.headerText,
+    title: 'Heart Rate',
+  }}
+/>
       </Drawer>
 
 
