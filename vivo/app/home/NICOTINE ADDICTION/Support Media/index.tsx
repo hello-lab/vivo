@@ -148,7 +148,7 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
               <Text style={styles.categoryButtonText}>Audiobooks</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => handleCategoryChange('anti alcohol motivational quotes')}
+              onPress={() => handleCategoryChange('encouraging anti nicotine motivational quotes')}
               style={[
                 styles.categoryButton,
                 selectedCategory === 'motivational quotes' && styles.selectedCategoryButton,
