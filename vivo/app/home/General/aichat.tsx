@@ -1,115 +1,181 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, Button, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-export default  function HomeScren() {
-    const router = useRouter();
-  
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const server = 'http://192.168.29.29:3000/';
- useEffect(() => {
-    async function fetchData() {
-      try{
-  await AsyncStorage.getItem('username').then((value) => {
-    console.log(value);
-    setUsername(String(value));
-  })
-      await AsyncStorage.getItem('email').then((value) => {
-        console.log(value);
-    setEmail(String(value))})}
-  catch (error) {
-    
-  }
-  }
+import { SafeAreaView, TextInput, Button, FlatList, Text, StyleSheet, View, TouchableOpacity, Linking } from 'react-native';
 
-    fetchData();}, []);
+const App: React.FC = () => {
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<{ text: any; user: string; id: string; style?: any }[]>([]);
+  const [error, setError] = useState<string>('');
+  const [aiName, setAiName] = useState<string>('Chulbul Pandey'); // Default AI name
+
+  const handleSendMessage = async () => {
+    if (message.trim()) {
+      const userMessage = { text: message, user: 'You', id: Math.random().toString() };
+      setMessages((previousMessages) => [...previousMessages, userMessage]);
+
+      setMessage(''); // Reset message input
+      setError(''); // Reset error message
+
+      try {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmgd67c4lWZtjBPB99TUsETlJtqmhcUx4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: message }, // Use user input as the text to generate a response
+                ],
+              },
+            ],
+          }),
+        });
+
+        const data = await response.json();
+        console.log('Full API Response:', data);
+
+        if (data.error) {
+          setError(`Error: ${data.error.message}`);
+          return;
+        }
+
+        if (!data?.candidates || data.candidates.length === 0) {
+          setError('No response generated.');
+          return;
+        }
+
+        const content = data?.candidates?.[0]?.content;
+        let aiMessageText = 'Sorry, no response generated.';
+        let aiMessageStyle = {}; // Default styles
+
+        if (content && Array.isArray(content.parts) && content.parts.length > 0) {
+          const generatedText = content.parts[0]?.text;
+          if (generatedText) {
+            aiMessageText = generatedText.trim();
+          }
+        }
+
+        // Parse markdown text
+        aiMessageText = parseMarkdown(aiMessageText);
+
+        const aiMessage = {
+          text: aiMessageText,
+          user: aiName, // Use the dynamic AI name
+          id: Math.random().toString(),
+          style: aiMessageStyle, // Attach dynamic styles here
+        };
+
+        setMessages((previousMessages) => [...previousMessages, aiMessage]);
+      } catch (error) {
+        setError('Something went wrong!');
+      }
+    }
+  };
+
+  // Function to parse Markdown and convert it into React Native components
+  const parseMarkdown = (text: string) => {
+    // Bold (**bold text**)
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    text = text.replace(boldRegex, (match, p1) => {
+      return `<bold>${p1}</bold>`;
+    });
+
+    // Italic (*italic text*)
+    const italicRegex = /\*(.*?)\*/g;
+    text = text.replace(italicRegex, (match, p1) => {
+      return `<italic>${p1}</italic>`;
+    });
+
+    // Links [link text](URL)
+    const linkRegex = /\[(.*?)\]\((.*?)\)/g;
+    text = text.replace(linkRegex, (match, p1, p2) => {
+      return `<link text="${p1}" href="${p2}">${p1}</link>`;
+    });
+
+    return renderTextWithMarkdown(text);
+  };
+
+  // Function to render the parsed Markdown text with React Native components
+  const renderTextWithMarkdown = (text: string) => {
+    // Split text by custom tags <bold>, <italic>, <link>
+    const regex = /<(bold|italic|link)[^>]*>(.*?)<\/\1>/g;
+    const elements = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      // Add plain text before the tag
+      if (match.index > lastIndex) {
+        elements.push(text.substring(lastIndex, match.index));
+      }
+      
+      // Add bold text
+      if (match[1] === 'bold') {
+        elements.push(<Text key={Math.random()} style={styles.boldText}>{match[2]}</Text>);
+      }
+      // Add italic text
+      else if (match[1] === 'italic') {
+        elements.push(<Text key={Math.random()} style={styles.italicText}>{match[2]}</Text>);
+      }
+      // Add link text
+      else if (match[1] === 'link') {
+        elements.push(
+          <Text key={Math.random()} style={styles.linkText} onPress={() => Linking.openURL(match[2])}>
+            {match[2]}
+          </Text>
+        );
+      }
+      
+      lastIndex = regex.lastIndex;
+    }
+
+    // Push the remaining plain text after the last tag
+    if (lastIndex < text.length) {
+      elements.push(text.substring(lastIndex));
+    }
+
+    return elements;
+  };
+
   return (
-   
-    <SafeAreaView style={styles.fullh}>
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Welcome, {username}!</Text>
-           
-    </ScrollView>
+    <SafeAreaView style={styles.container}>
+
+      {/* Chat Messages */}
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Text
+            style={[
+              item.user === 'You' ? styles.userMessage : styles.aiMessage,
+              item.style, // Apply dynamic style if present
+            ]}
+          >
+            {item.user}: {item.text}
+          </Text>
+        )}
+      />
+
+      {/* Message Input and Send Button */}
+      <TextInput
+        style={styles.input}
+        value={message}
+        onChangeText={setMessage}
+        placeholder="Type a message"
+      />
+      <Button title="Send" onPress={handleSendMessage} />
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  fullh:{
-    height: '100%', borderColor: 'red'
-  },
-  btn1:{
-    position: 'absolute',
-    bottom: 0, 
-    right: 0,
-    padding: 16,
-  },
-image:{
-  width: 320,
-  height: 250,
- 
-  marginBottom: 16,
-  borderRadius: 25
-
-},
   container: {
-   alignItems: 'center',
-     borderColor: 'red',
     flex: 1,
-   
     padding: 16,
-  },
-  title: {
-    fontSize: 28,
-    marginBottom: 16,
-    textAlign: 'left',
-    top: 0,
-    position: 'fixed',
-    fontFamily: 'HeadingNow',
-    color: '#91c4f6',
-  },
-  txt: {
-    fontSize: 20,
-    marginBottom: 16,
-    textAlign: 'center',
-    top: 0,
-    position: 'fixed',
-    fontFamily: 'HeadingNow',
-    color: 'black',
-  },
-  btns:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 320,
-  },
-  btn:{
-    height: 50,
-    width: 150,
-    backgroundColor: '#91c4f6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
-    borderColor: '#1e5175',
-    borderWidth: 2,
-    },
-  bttn:{
-    height: 50,
-    width: 150,
-    backgroundColor: '#f1adc4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
-    borderColor: '#ff51b5',
-    borderWidth: 2,
-  },
-  btnText: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: 'HeadingNow',
+    backgroundColor: '#f0f0f0',
   },
   input: {
     height: 40,
@@ -117,7 +183,49 @@ image:{
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
-    width: 320,
-    borderRadius: 25
+    borderRadius: 8,
+    fontSize: 16,
+    color: '#333',
+  },
+  userMessage: {
+    fontSize: 18,
+    padding: 10,
+    backgroundColor: '#91c4f6',
+    borderRadius: 8,
+    marginVertical: 4,
+    fontFamily: 'Arial',
+    color: '#000',
+    fontWeight: 'bold',
+    textAlign: 'left',
+  },
+  aiMessage: {
+    fontSize: 18,
+    padding: 10,
+    backgroundColor: '#f1adc4',
+    borderRadius: 8,
+    marginVertical: 4,
+    fontFamily: 'Courier New',
+    color: '#00000',
+    fontWeight: 'normal',
+    textAlign: 'left',
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#000', // Make bold text black or customize the color
+  },
+  italicText: {
+    fontStyle: 'italic',
+    color: '#000', // Make italic text grey or customize the color
+  },
+  linkText: {
+    color: 'blue',
+    textDecorationLine: 'underline',
+  },
+  error: {
+    color: 'red',
+    marginTop: 12,
+    fontSize: 14,
   },
 });
+
+export default App;
