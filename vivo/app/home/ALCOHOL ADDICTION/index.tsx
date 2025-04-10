@@ -5,40 +5,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 export default function HomeScreen() {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [backgroundpic, s] = useState('');
+  const [color, setcolor] = useState('');
+  const [color1, setcolor1] = useState('');
+
+AsyncStorage.getItem('backgroundcolor').then((value) => {
+    console.log(value);
+setcolor(String(value))})
+AsyncStorage.getItem('backgroundpic').then((value) => {
+  console.log(value);
+s(String(value))})
+AsyncStorage.getItem('accents').then((value) => {
+  console.log(value);
+setcolor1(String(value))})
   const server = 'http://192.168.29.29:3000/';
   AsyncStorage.getItem('username').then((value) => {
     console.log(value);
     setUsername(String(value));
   })
-      AsyncStorage.getItem('email').then((value) => {
-        console.log(value);
-    setEmail(String(value))})
-    useEffect(() => {
-    async function fetchData() {
-      try{
- }
-  catch (error) {
-    
-  }
-  }
-
-    fetchData();}, []);
-  return (
-   
-    <SafeAreaView style={styles.fullh}>
-    <ScrollView contentContainerStyle={styles.container}>
-     
-      <Text style={styles.title}>Welcome, {username}!</Text>
-      <Text style={styles.txt}>WE KNOW YOU ARE STRONGER THAN THAT GLASS BOTTLE</Text>
-      
-    </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-const styles = StyleSheet.create({
+     const styles = StyleSheet.create({
   fullh:{
     height: '100%', borderColor: 'red'
   },
@@ -54,7 +39,7 @@ image:{
    alignItems: 'center',
      borderColor: 'red',
     flex: 1,
-   
+   backgroundColor: color,
     padding: 16,
   },
   title: {
@@ -115,3 +100,30 @@ image:{
     borderRadius: 25
   },
 });
+    useEffect(() => {
+    async function fetchData() {
+      try{
+ }
+  catch (error) {
+    
+  }
+  }
+
+    fetchData();}, []);
+  return (
+   
+    
+    <ScrollView contentContainerStyle={styles.container}>
+    <Image 
+        source={{ uri: backgroundpic }}
+        style={StyleSheet.absoluteFill}
+      />
+      <Text style={styles.title}>Welcome, {username}!</Text>
+      <Text style={styles.txt}>WE KNOW YOU ARE STRONGER THAN THAT GLASS BOTTLE</Text>
+      
+    </ScrollView>
+   
+  );
+}
+
+

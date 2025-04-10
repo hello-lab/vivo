@@ -1,17 +1,30 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
-import { SafeAreaView, TextInput, Button, FlatList, Text, StyleSheet, View, TouchableOpacity, Linking } from 'react-native';
+import { SafeAreaView, TextInput, Button, FlatList, Text, StyleSheet, View, TouchableOpacity,Image, Linking } from 'react-native';
 
 const App: React.FC = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<{ text: any; user: string; id: string; style?: any }[]>([]);
   const [error, setError] = useState<string>('');
-  const [aiName, setAiName] = useState<string>('Chulbul Pandey'); // Default AI name
+  const [aiName, setAiName] = useState<string>('Helper'); // Default AI name
+  const [backgroundpic, s] = useState('');
+      const [color, setcolor] = useState('');
+      const [color1, setcolor1] = useState('');
 
+    AsyncStorage.getItem('backgroundcolor').then((value) => {
+        console.log(value);
+    setcolor(String(value))})
+    AsyncStorage.getItem('backgroundpic').then((value) => {
+      console.log(value);
+    s(String(value))})
+    AsyncStorage.getItem('accents').then((value) => {
+      console.log(value);
+    setcolor1(String(value))})
   const handleSendMessage = async () => {
     if (message.trim()) {
       const userMessage = { text: message, user: 'You', id: Math.random().toString() };
       setMessages((previousMessages) => [...previousMessages, userMessage]);
-
+    
       setMessage(''); // Reset message input
       setError(''); // Reset error message
 
@@ -72,7 +85,64 @@ const App: React.FC = () => {
       }
     }
   };
-
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: color,
+    },
+    input: {
+      height: 40,
+      borderColor: 'gray',
+      borderWidth: 1,
+      marginBottom: 12,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+      fontSize: 16,
+      color: '#333',
+      backgroundColor: color1,
+    },
+    userMessage: {
+      fontSize: 18,
+      padding: 10,
+      backgroundColor: '#91c4f6',
+      borderRadius: 8,
+      marginVertical: 4,
+      fontFamily: 'Arial',
+      color: '#000',
+      fontWeight: 'bold',
+      textAlign: 'left',
+    },
+    aiMessage: {
+      fontSize: 18,
+      padding: 10,
+      backgroundColor: '#f1adc4',
+      borderRadius: 8,
+      marginVertical: 4,
+      fontFamily: 'Courier New',
+      color: '#00000',
+      fontWeight: 'normal',
+      textAlign: 'left',
+    },
+    boldText: {
+      fontWeight: 'bold',
+      color: '#000', // Make bold text black or customize the color
+    },
+    italicText: {
+      fontStyle: 'italic',
+      color: '#000', // Make italic text grey or customize the color
+    },
+    linkText: {
+      color: 'blue',
+      textDecorationLine: 'underline',
+    },
+    error: {
+      color: 'red',
+      marginTop: 12,
+      fontSize: 14,
+    },
+  });
+  
   // Function to parse Markdown and convert it into React Native components
   const parseMarkdown = (text: string) => {
     // Bold (**bold text**)
@@ -140,7 +210,10 @@ const App: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-
+      <Image 
+        source={{ uri: backgroundpic }}
+        style={StyleSheet.absoluteFill}
+      />
       {/* Chat Messages */}
       <FlatList
         data={messages}

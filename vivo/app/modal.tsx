@@ -14,9 +14,12 @@ export default function Modal() {
 AsyncStorage.getItem('username').then((value) => {
  
     setUsername(String(value));
-    const storedNumbers =  AsyncStorage.getItem('numbers');
-                if (storedNumbers) setNumbers(JSON.parse(storedNumbers));
-    console.log('jj'+storedNumbers)
+    AsyncStorage.getItem('numbers').then((storedNumbers)=>{ 
+      if (numbers!=storedNumbers)
+      setNumbers(JSON.parse(storedNumbers));
+    //console.log('jj'+storedNumbers)
+    })
+               
   useEffect(  () => {
     PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.CALL_PHONE
@@ -31,7 +34,7 @@ AsyncStorage.getItem('username').then((value) => {
 
 
   const smss = async () => {
-    console.log(numbers)
+    console.log(numbers,'h')
     const { result } = await SMS.sendSMSAsync(
       numbers, // Recipients
       'This is a distress message!'

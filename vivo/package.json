@@ -96,7 +96,8 @@
     "tailwindcss": "^3.4.17",
     "util": "^0.12.5",
     "vision-camera-resize-plugin": "^3.2.0",
-    "waterfall": "^3.0.1"
+    "waterfall": "^3.0.1",
+    "expo-image-picker": "~16.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

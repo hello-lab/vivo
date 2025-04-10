@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import YouTube from 'react-native-youtube-iframe';
@@ -12,6 +13,215 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
   const [error, setError] = useState<string | null>(null); // To store error message
   const [isPlaying, setIsPlaying] = useState(false); // To track whether the video is playing
   const [clicked, setClicked] = useState(false); // To track whether the video is playing
+  const [backgroundpic, s] = useState('');
+  const [color, setcolor] = useState('');
+  const [color1, setcolor1] = useState('');
+    const [backgroundcolor, setBackgroundcolor] = useState("");
+    const [primarycolor, setPrimarycolor] = useState("");
+    const [secondarycolor, setSecondarycolor] = useState("");
+    const [tertiarycolor, setTertairycolor] = useState("");
+    const [accentcolor, setAccentcolor] = useState("");
+  
+    AsyncStorage.getItem("backgroundcolor").then((value) => {
+      setBackgroundcolor(String(value));
+    });
+    AsyncStorage.getItem("primary").then((value) => {
+      setPrimarycolor(String(value));
+    });
+    AsyncStorage.getItem("secondary").then((value) => {
+      setSecondarycolor(String(value));
+    });
+    AsyncStorage.getItem("tertiary").then((value) => {
+      setTertairycolor(String(value));
+    });
+    AsyncStorage.getItem("accents").then((value) => {
+      setAccentcolor(String(value));
+    });
+AsyncStorage.getItem('backgroundcolor').then((value) => {
+    console.log(value);
+setcolor(String(value))})
+AsyncStorage.getItem('backgroundpic').then((value) => {
+  console.log(value);
+s(String(value))})
+AsyncStorage.getItem('accents').then((value) => {
+  console.log(value);
+setcolor1(String(value))})
+const styles = StyleSheet.create({
+  sh:{
+    backgroundColor: tertiarycolor,
+    width: '100%',
+    alignItems: 'center',
+paddingTop: 20,
+fontFamily:'HeadingNow',
+borderTopRightRadius: 15,
+
+  },
+  thumbnailsContainer:{
+    position: 'absolute',
+    zIndex: 5,
+    width: '100%',
+    height: '100%',
+    padding: 20,
+    alignSelf: 'center',
+    //alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    fontFamily:'HeadingNow',
+    backgroundColor: 'rgba(37, 37, 37, 0.7)', // Semi-transparent background
+    borderRadius: 15,
+    display: 'flex',
+  }
+,
+  container: {
+    flex: 1,
+    fontFamily:'HeadingNow',
+    //alignItems: 'center',
+    justifyContent: 'center',
+    padding: '5%',
+    
+    paddingTop: 50,
+    borderRadius: 15,
+   // backgroundColor: '#acb8c0',
+  },
+  header: {
+    marginBottom: 10,
+    fontFamily: 'HeadingNow',
+
+  },
+  title: {
+    fontSize: 24,
+   // fontWeight: 'bold',
+    marginBottom: 10,
+    fontFamily: 'HeadingNow',
+
+  },
+  categoryButtonContainer: {
+    flexDirection: 'row',
+    fontFamily: 'HeadingNow',
+
+
+    marginBottom: -8, // Add margin between buttons and video list
+  
+    padding: 0,
+    width: '100%',
+  },
+  categoryButton: {
+    backgroundColor: primarycolor,
+    borderRadius: 10,
+    padding: 6,
+    //marginLeft: 1,
+    marginRight: 5,
+    fontFamily: 'HeadingNow',
+    paddingBottom: 15,
+  },
+  categoryButtonText: {
+    fontSize: 15,
+    color: 'white',
+    fontFamily: 'HeadingNow',
+
+  },
+  selectedCategoryButton: {
+    backgroundColor: tertiarycolor, // Highlight selected category
+  },
+  videoItem: {
+    marginBottom: 15,
+  },
+  videoItemContent: {
+    backgroundColor: '#e2e2e2',
+    padding: 15,
+    borderRadius: 10,
+    width: 300,
+    alignItems: 'center',
+    flexDirection: 'row',
+    fontFamily: 'HeadingNow',
+
+  },
+  thumbnail: {
+    width: 100,
+    height: 100,
+    marginRight: 8,
+    borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
+  },
+  thumbnails: {
+    width: 250,
+    height: 200,
+    marginRight: 8,
+    marginTop: 200,
+    borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
+  },
+  videoTitle: {
+    fontSize: 16,
+    color: '#333',
+    flexShrink: 1,
+    fontFamily: 'HeadingNow',
+
+  },
+  videoPlayer: {
+    width: '100%',
+    height: 300,
+    backgroundColor: 'black',
+    marginBottom: 20,
+  },
+  videoTitleBox: {
+    backgroundColor: primarycolor, // Semi-transparent background
+    padding: 10,
+   
+    marginBottom: 20,
+    borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
+  },
+
+  buttonpar:{
+    
+  },
+  playPauseButton: {
+   
+    alignSelf: 'center',
+  fontFamily: 'HeadingNow',
+    backgroundColor: primarycolor,
+    borderRadius: 25,
+    padding: 15,
+    alignItems: 'center',
+    width: 55,
+  },
+  playPauseButtonText: {
+    fontSize: 18,
+    color: 'black',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 30,
+    right: 20,
+    backgroundColor: primarycolor,
+    padding: 10,
+    borderRadius: 5,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: 'blac',
+  },
+  refreshButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 50,
+  },
+  refreshButtonText: {
+    fontSize: 18,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 20,
+  },
+});
+
   useEffect(() => {
     fetchVideos();
   }, [selectedCategory]); // Re-fetch videos whenever the category changes
@@ -77,7 +287,10 @@ const data =await response.json();      //console.log(JSON.parse(data))
   return (
     <View style={styles.container}>
       {/* Back button if video is selected */}
-        
+      <Image 
+        source={{ uri: backgroundpic }}
+        style={StyleSheet.absoluteFill}
+      />
         {(clicked)?
         <View style={styles.thumbnailsContainer}>
           {/* Display the thumbnail above the YouTube player */}
@@ -121,10 +334,7 @@ const data =await response.json();      //console.log(JSON.parse(data))
           {/* Show error message if an error occurs */}
           {error && <Text style={styles.errorText}>{error}</Text>}
 
-          <View style={styles.header}>
-            {/* Relaxing Media Text */}
-            <Text style={styles.title}>Relaxing Media</Text>
-          </View>
+        
 
           {/* Category Selection Buttons below Relaxing Media */}
           <View style={styles.categoryButtonContainer}>
@@ -138,10 +348,10 @@ const data =await response.json();      //console.log(JSON.parse(data))
               <Text style={styles.categoryButtonText}>Calming Music</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => handleCategoryChange('relaxing audiobooks for online addiction')}
+              onPress={() => handleCategoryChange('relaxing audiobooks for online addiction ')}
               style={[
                 styles.categoryButton,
-                selectedCategory === 'relaxing audiobooks for online addiction' && styles.selectedCategoryButton,
+                selectedCategory === 'relaxing audiobooks for online addiction ' && styles.selectedCategoryButton,
               ]}
             >
               <Text style={styles.categoryButtonText}>Audiobooks</Text>
@@ -176,179 +386,5 @@ const data =await response.json();      //console.log(JSON.parse(data))
   );
 };
 
-const styles = StyleSheet.create({
-  sh:{
-    backgroundColor: '#acb8c0',
-    width: '100%',
-    alignItems: 'center',
-paddingTop: 20,
-fontFamily:'HeadingNow',
-borderTopRightRadius: 15,
-  },
-  thumbnailsContainer:{
-    position: 'absolute',
-    zIndex: 5,
-    width: '100%',
-    height: '100%',
-    padding: 20,
-    alignSelf: 'center',
-    //alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    fontFamily:'HeadingNow',
-    backgroundColor: 'rgba(37, 37, 37, 0.7)', // Semi-transparent background
-    borderRadius: 15,
-    display: 'flex',
-  }
-,
-  container: {
-    flex: 1,
-    fontFamily:'HeadingNow',
-    //alignItems: 'center',
-    justifyContent: 'center',
-    padding: '5%',
-    
-    paddingTop: 50,
-    borderRadius: 15,
-   // backgroundColor: '#acb8c0',
-  },
-  header: {
-    marginBottom: 10,
-    fontFamily: 'HeadingNow',
-
-  },
-  title: {
-    fontSize: 24,
-   // fontWeight: 'bold',
-    marginBottom: 10,
-    fontFamily: 'HeadingNow',
-
-  },
-  categoryButtonContainer: {
-    flexDirection: 'row',
-    fontFamily: 'HeadingNow',
-
-
-    marginBottom: -8, // Add margin between buttons and video list
-  
-    padding: 0,
-    width: '100%',
-  },
-  categoryButton: {
-    backgroundColor: '#91c4f6',
-    borderRadius: 10,
-    padding: 6,
-    //marginLeft: 1,
-    marginRight: 5,
-    fontFamily: 'HeadingNow',
-    paddingBottom: 15,
-  },
-  categoryButtonText: {
-    fontSize: 15,
-    color: 'white',
-    fontFamily: 'HeadingNow',
-
-  },
-  selectedCategoryButton: {
-    backgroundColor: '#acb8c0', // Highlight selected category
-  },
-  videoItem: {
-    marginBottom: 15,
-  },
-  videoItemContent: {
-    backgroundColor: '#e2e2e2',
-    padding: 15,
-    borderRadius: 10,
-    width: 300,
-    alignItems: 'center',
-    flexDirection: 'row',
-    fontFamily: 'HeadingNow',
-
-  },
-  thumbnail: {
-    width: 100,
-    height: 100,
-    marginRight: 8,
-    borderRadius: 15,
-    fontFamily: 'HeadingNow',
-
-  },
-  thumbnails: {
-    width: 250,
-    height: 200,
-    marginRight: 8,
-    marginTop: 200,
-    borderRadius: 15,
-    fontFamily: 'HeadingNow',
-
-  },
-  videoTitle: {
-    fontSize: 16,
-    color: '#333',
-    flexShrink: 1,
-    fontFamily: 'HeadingNow',
-
-  },
-  videoPlayer: {
-    width: '100%',
-    height: 300,
-    backgroundColor: 'black',
-    marginBottom: 20,
-  },
-  videoTitleBox: {
-    backgroundColor: '#91c4f6', // Semi-transparent background
-    padding: 10,
-   
-    marginBottom: 20,
-    borderRadius: 15,
-    fontFamily: 'HeadingNow',
-
-  },
-
-  buttonpar:{
-    
-  },
-  playPauseButton: {
-   
-    alignSelf: 'center',
-  fontFamily: 'HeadingNow',
-    backgroundColor: '#91c4f6',
-    borderRadius: 25,
-    padding: 15,
-    alignItems: 'center',
-    width: 55,
-  },
-  playPauseButtonText: {
-    fontSize: 18,
-    color: 'black',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 30,
-    right: 20,
-    backgroundColor: '#91c4f6',
-    padding: 10,
-    borderRadius: 5,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: 'blac',
-  },
-  refreshButton: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 50,
-  },
-  refreshButtonText: {
-    fontSize: 18,
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 20,
-  },
-});
 
 export default YouTubeSearch;

@@ -10,7 +10,31 @@ export default function HomeScreen(): JSX.Element {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [installedApps, setInstalledApps] = useState<{ label: string; value: string }[]>([]);
     const [selectedApps, setSelectedApps] = useState<string[]>([]);
+    const [backgroundcolor, setBackgroundcolor] = useState("");
+    const [primarycolor, setPrimarycolor] = useState("");
+    const [secondarycolor, setSecondarycolor] = useState("");
+    const [tertiarycolor, setTertairycolor] = useState("");
+    const [accentcolor, setAccentcolor] = useState("");
+    const [backgroundpic, s] = useState('');
 
+    AsyncStorage.getItem("backgroundpic").then((value) => {
+        s(String(value));
+    });
+    AsyncStorage.getItem("backgroundcolor").then((value) => {
+        setBackgroundcolor(String(value));
+      });
+      AsyncStorage.getItem("primary").then((value) => {
+        setPrimarycolor(String(value));
+      });
+      AsyncStorage.getItem("secondary").then((value) => {
+        setSecondarycolor(String(value));
+      });
+      AsyncStorage.getItem("tertiary").then((value) => {
+        setTertairycolor(String(value));
+      });
+      AsyncStorage.getItem("accents").then((value) => {
+        setAccentcolor(String(value));
+      });
     useEffect(() => {
         async function fetchData() {
            
@@ -62,6 +86,10 @@ export default function HomeScreen(): JSX.Element {
 //h
     return (
         <SafeAreaView style={styles.fullh}>
+              <Image 
+        source={{ uri: backgroundpic }}
+        style={StyleSheet.absoluteFill}
+      />
             {/* Disable scrolling to prevent DropDownPicker conflict */}
             <View style={styles.container}  >
               <View style={{backgroundColor: '#6d6e6b', width: '100%', padding: 12, display: 'flex', borderRadius:24}}>
@@ -84,7 +112,7 @@ export default function HomeScreen(): JSX.Element {
                         multiple={true}
                         placeholder="Select restricted apps"
                         mode="BADGE"
-                        
+                        style={{ backgroundColor: accentcolor, borderColor: secondarycolor, borderRadius: 14 }}
                         searchable={true}
                     />
                 </View>

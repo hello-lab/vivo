@@ -26,11 +26,11 @@ const Index = () => {
           AsyncStorage.setItem('tertiary', '#192840');
           AsyncStorage.setItem('accents', 'white');
           AsyncStorage.setItem('backgroundpic', 'https://tmp.starryai.com/api/122102/8f5c442f-5a41-4b78-8700-d4f0185f0760.png');
+          AsyncStorage.setItem('backgroundpics', JSON.stringify(['https://tmp.starryai.com/api/122102/8f5c442f-5a41-4b78-8700-d4f0185f0760.png']));
 
         }
         })
       
-        AsyncStorage.setItem('backgroundpic', 'https://tmp.starryai.com/api/122102/8f5c442f-5a41-4b78-8700-d4f0185f0760.png');
 
         
       } catch (error) {
