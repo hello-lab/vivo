@@ -11,17 +11,17 @@ export default function Modal() {
   const isPresented = router.canGoBack();
   const [username, setUsername] = useState('');
   const [numbers, setNumbers] = useState('');
-
-  useEffect(  () => {
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CALL_PHONE
-    ).then((d) => {console.log(d)})
-   AsyncStorage.getItem('username').then((value) => {
+AsyncStorage.getItem('username').then((value) => {
  
     setUsername(String(value));
     const storedNumbers =  AsyncStorage.getItem('numbers');
                 if (storedNumbers) setNumbers(JSON.parse(storedNumbers));
     console.log('jj'+storedNumbers)
+  useEffect(  () => {
+    PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CALL_PHONE
+    ).then((d) => {console.log(d)})
+   
   })})
 
   const call=()=>{

@@ -1,9 +1,11 @@
 import {SplashScreen, Stack} from "expo-router"
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
+import {GestureHandlerRootView} from "react-native-gesture-handler"
 import {useFonts} from "expo-font"
-import { useEffect } from "react"
-import { StyleSheet } from "react-native"
+import { useEffect, useState } from "react"
+import { StyleSheet, View } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FontStyle } from "@shopify/react-native-skia";
 export default function RootLayout(){
     const [fontsLoaded] = useFonts( {
         "HeadingNow":require("../../../assets/fonts/HeadingNowTrial-68Heavy.ttf"),
@@ -11,25 +13,59 @@ export default function RootLayout(){
     })
 
 
-const styles = StyleSheet.create({
-  header: {
-    backgroundColor: '#f8f8f8',
-  },
-  headerText: {
-    fontSize: 25,
-    
-    textAlign: 'left',
-    top: 0,
-    position: 'fixed',
-    fontFamily: 'HeadingNow',
-    color: '#91c4f6',
-  },
-});    
+
+ const [backgroundcolor, setBackgroundcolor] = useState("");
+  const [primarycolor, setPrimarycolor] = useState("");
+  const [secondarycolor, setSecondarycolor] = useState("");
+  const [tertiarycolor, setTertairycolor] = useState("");
+  const [accentcolor, setAccentcolor] = useState("");
+  AsyncStorage.getItem("backgroundcolor").then((value) => {
+    setBackgroundcolor(String(value));
+  });
+  AsyncStorage.getItem("primary").then((value) => {
+    setPrimarycolor(String(value));
+  });
+  AsyncStorage.getItem("secondary").then((value) => {
+    setSecondarycolor(String(value));
+  });
+  AsyncStorage.getItem("tertiary").then((value) => {
+    setTertairycolor(String(value));
+  });
+  AsyncStorage.getItem("accents").then((value) => {
+    setAccentcolor(String(value));
+  }); 
+  const styles = StyleSheet.create({
+    header: {
+      backgroundColor: accentcolor,
+    },
+    headerText: {
+      fontSize: 28,
+      
+      textAlign: 'left',
+      top: 0,
+      position: 'fixed',
+      fontFamily: 'HeadingNow',
+      color: primarycolor,
+    },
+  });   
+  console.log(secondarycolor)
 useEffect(()=>{
+ 
     if(fontsLoaded){SplashScreen.hideAsync()}},[fontsLoaded])
         if(!fontsLoaded){return null}
-    return  <GestureHandlerRootView style={{ flex: 1 }}>
-    <Drawer>
+    return  <GestureHandlerRootView style={{ flex: 1 ,backgroundColor:'red'}}>
+      
+         <Drawer
+          screenOptions={{ 
+            drawerActiveTintColor: '#91c4f6',
+            drawerInactiveTintColor: secondarycolor,
+            drawerLabelStyle: {
+            
+              fontSize: 20,
+              fontFamily: 'HeadingNow',
+            },
+               drawerStyle:{ backgroundColor: accentcolor, flex: 1,} }}
+         >
     <Drawer.Screen
         name="index" // This is the name of the page and must match the url from root
         options={{

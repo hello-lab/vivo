@@ -13,10 +13,10 @@ export default function RootLayout(){
 
 const styles = StyleSheet.create({
   header: {
-      backgroundColor: '#f8f8f8',
+    backgroundColor: '#f8f8f8',
   },
   headerText: {
-    fontSize: 28,
+    fontSize: 25,
     
     textAlign: 'left',
     top: 0,

@@ -53,7 +53,7 @@ export default function HomeScreen(): JSX.Element {
 
            
               
-            await AsyncStorage.setItem("restrictedApps", JSON.stringify(selectedApps));
+            AsyncStorage.setItem("restrictedApps", JSON.stringify(selectedApps));
             Alert.alert("Success", "Restricted apps saved!");
         } catch (error) {
             console.error("Error saving restricted apps:", error);
@@ -110,7 +110,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         padding: 16,
-
     },
     contt: {
       alignItems: 'center',

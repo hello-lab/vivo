@@ -14,11 +14,11 @@ export default  function HomeScren() {
  useEffect(() => {
     async function fetchData() {
       try{
-  await AsyncStorage.getItem('username').then((value) => {
+  AsyncStorage.getItem('username').then((value) => {
     console.log(value);
     setUsername(String(value));
   })
-      await AsyncStorage.getItem('email').then((value) => {
+      AsyncStorage.getItem('email').then((value) => {
         console.log(value);
     setEmail(String(value))})}
   catch (error) {

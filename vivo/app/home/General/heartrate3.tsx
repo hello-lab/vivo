@@ -389,10 +389,10 @@ const calculateBpm = (samples) => {
     try {
       const timestamp = new Date().toISOString();
       const newEntry = { meanHeartRate, timestamp };
-      const existingData = await AsyncStorage.getItem('heartRateHistory');
+      const existingData = AsyncStorage.getItem('heartRateHistory');
       const heartRateHistory = existingData ? JSON.parse(existingData) : [];
       heartRateHistory.push(newEntry);
-      await AsyncStorage.setItem('heartRateHistory', JSON.stringify(heartRateHistory));
+      AsyncStorage.setItem('heartRateHistory', JSON.stringify(heartRateHistory));
       console.log('Mean heart rate saved successfully!',heartRateHistory);
     } catch (error) {
       console.error('Failed to save mean heart rate:', error);

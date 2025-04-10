@@ -14,8 +14,8 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     console.log("Login button pressed");
-    await AsyncStorage.setItem('username', username);
-    await AsyncStorage.setItem('email', email);
+    AsyncStorage.setItem('username', username);
+    AsyncStorage.setItem('email', email);
     router.replace('/home/General');
     try {
       const response = await fetch(server + 'login', {
@@ -28,7 +28,7 @@ export default function LoginScreen() {
       const data = await response.json();
       console.log(data);
       if (data.token) {
-        await AsyncStorage.setItem('token', data.token);
+        AsyncStorage.setItem('token', data.token);
         Alert.alert('Login Success');
         console.log('Token stored successfully');
       } else {

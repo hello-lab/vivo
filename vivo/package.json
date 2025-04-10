@@ -92,6 +92,7 @@
     "react-native-youtube": "^2.0.2",
     "react-native-youtube-iframe": "^2.3.0",
     "react-navigation": "^5.0.0",
+    "reanimated-color-picker": "^4.0.1",
     "tailwindcss": "^3.4.17",
     "util": "^0.12.5",
     "vision-camera-resize-plugin": "^3.2.0",

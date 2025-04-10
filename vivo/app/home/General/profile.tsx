@@ -13,39 +13,41 @@ export default function HomeScreen() {
     const [restricted, setRestricted] = useState('');
     const [heartrate, setHeartrate] = useState<{ meanHeartRate: number; timestamp: string }[]>([]);
     const [styless, setStyles] = useState({});
+    const [backgroundcolor, setBackgroundcolor] = useState('');
     const [email, setEmail] = useState('');
     useEffect(() => {
-        async function fetchData() {
+       
+    }, []);
+ async function fetchData() {
             try {
-                const storedUsername = await AsyncStorage.getItem('username');
-                if (storedUsername) setUsername(storedUsername);
-                const email = await AsyncStorage.getItem('email');
-                if (email) setEmail(email);
-                const storedNumbers = await AsyncStorage.getItem('numbers');
-                if (storedNumbers) setNumbers(JSON.parse(storedNumbers));
-                const restricted = await AsyncStorage.getItem('restrictedApps');
-                if (restricted) setRestricted(JSON.parse(restricted))
-                    const existingData = await AsyncStorage.getItem('heartRateHistory');
+                const storedUsername = AsyncStorage.getItem('username');
+                console.log(typeof(storedUsername))
+                if (typeof(storedUsername)!='object') setUsername(storedUsername);
+                const email = AsyncStorage.getItem('email');
+                if (typeof(email)!='object') setEmail(email);
+                const storedNumbers = AsyncStorage.getItem('numbers');
+                if (typeof(storedNumbers)!='object') setNumbers(JSON.parse(storedNumbers));
+                const restricted = AsyncStorage.getItem('restrictedApps');
+                if (typeof(restricted)!='object') setRestricted(JSON.parse(restricted))
+                    const existingData = AsyncStorage.getItem('heartRateHistory');
                 setHeartrate(existingData ? JSON.parse(existingData) : [])
             } catch (error) {
                 console.error(error);
             }
         }
         fetchData();
-    }, []);
-
     const addNumber = async () => {
         if (!newNumber.trim() || isNaN(Number(newNumber))) return; // ✅ Prevent invalid input
         const updatedNumbers = [...numbers, parseInt(newNumber)];
         setNumbers(updatedNumbers);
-        await AsyncStorage.setItem('numbers', JSON.stringify(updatedNumbers));
+        AsyncStorage.setItem('numbers', JSON.stringify(updatedNumbers));
         setNewNumber('');
     };
 
     const removeNumber = async (index: number) => {
         const updatedNumbers = numbers.filter((_, i) => i !== index);
         setNumbers(updatedNumbers);
-        await AsyncStorage.setItem('numbers', JSON.stringify(updatedNumbers));
+        AsyncStorage.setItem('numbers', JSON.stringify(updatedNumbers));
     };
 
     return (

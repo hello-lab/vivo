@@ -8,16 +8,17 @@ export default function HomeScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const server = 'http://192.168.29.29:3000/';
- useEffect(() => {
-    async function fetchData() {
-      try{
-  await AsyncStorage.getItem('username').then((value) => {
+  AsyncStorage.getItem('username').then((value) => {
     console.log(value);
     setUsername(String(value));
   })
-      await AsyncStorage.getItem('email').then((value) => {
+      AsyncStorage.getItem('email').then((value) => {
         console.log(value);
-    setEmail(String(value))})}
+    setEmail(String(value))})
+    useEffect(() => {
+    async function fetchData() {
+      try{
+ }
   catch (error) {
     
   }

@@ -4,8 +4,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs } from 'expo-router/tabs';
 import { Drawer } from 'expo-router/drawer';
 import {useFonts} from "expo-font"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { StyleSheet,View,Button,TouchableOpacity } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function RootLayout(){
     const [fontsLoaded] = useFonts( {
         "HeadingNow":require("../../assets/fonts/HeadingNowTrial-68Heavy.ttf"),
@@ -24,14 +25,43 @@ const styles = StyleSheet.create({
     top: 0,
     position: 'fixed',
     fontFamily: 'HeadingNow',
-    color: '#91c4f6',
+   // color: '#91c4f6',
   },
 });    
+ const [backgroundcolor, setBackgroundcolor] = useState("");
+  const [primarycolor, setPrimarycolor] = useState("");
+  const [secondarycolor, setSecondarycolor] = useState("");
+  const [tertiarycolor, setTertairycolor] = useState("");
+  const [accentcolor, setAccentcolor] = useState("");
+
+  AsyncStorage.getItem("backgroundcolor").then((value) => {
+    setBackgroundcolor(String(value));
+  });
+  AsyncStorage.getItem("primary").then((value) => {
+    setPrimarycolor(String(value));
+  });
+  AsyncStorage.getItem("secondary").then((value) => {
+    setSecondarycolor(String(value));
+  });
+  AsyncStorage.getItem("tertiary").then((value) => {
+    setTertairycolor(String(value));
+  });
+  AsyncStorage.getItem("accents").then((value) => {
+    setAccentcolor(String(value));
+  });
 useEffect(()=>{
     if(fontsLoaded){SplashScreen.hideAsync()}},[fontsLoaded])
         if(!fontsLoaded){return null}
-    return  <View style={{ flex: 1 }}>
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#91c4f6' }}>
+    return  <View style={{ flex: 1 ,}}>
+    <Tabs 
+    
+    screenOptions={{ tabBarActiveTintColor: primarycolor,
+      tabBarInactiveTintColor: secondarycolor,
+      tabBarLabelStyle: { fontSize: 12, fontFamily: 'SpaceMono' },
+      tabBarBackground: () => (
+       <View style={{ backgroundColor: accentcolor, flex: 1,top:-0.5,height:'102.5%' }} />
+      ),
+     }}>
          
       <Tabs.Screen
         name="General"
@@ -83,11 +113,7 @@ useEffect(()=>{
     right: 0,
     padding: 16,
   }}>
-    ///
             <Button color="red" title=" S.O.S." onPress={() => router.push('/modal')} />
             </View>
-
-
     </View>
-
-}
+  }

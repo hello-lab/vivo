@@ -9,29 +9,42 @@ export default  function HomeScren() {
   
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [backgroundpic, s] = useState('');
+  const [color, setcolor] = useState('');
+AsyncStorage.getItem('backgroundcolor').then((value) => {
+    console.log(value);
+setcolor(String(value))})
+AsyncStorage.getItem('backgroundpic').then((value) => {
+  console.log(value);
+s(String(value))})
   const server = 'http://192.168.29.29:3000/';
  useEffect(() => {
     async function fetchData() {
       try{
-  await AsyncStorage.getItem('username').then((value) => {
+  AsyncStorage.getItem('username').then((value) => {
     console.log(value);
     setUsername(String(value));
   })
   
-      await AsyncStorage.getItem('email').then((value) => {
+      AsyncStorage.getItem('email').then((value) => {
         console.log(value);
     setEmail(String(value))})}
   catch (error) {
     
   }
+   
   }
 
     fetchData();}, []);
   return (
    
     <SafeAreaView style={styles.fullh}>
-    <ScrollView contentContainerStyle={styles.container}>
+
+    <ScrollView contentContainerStyle={styles.container} style={{backgroundColor: color}}>
+      <Image 
+        source={{ uri: backgroundpic }}
+        style={StyleSheet.absoluteFill}
+      />
       <Text style={styles.title}>Welcome, {username}!</Text>
            
     </ScrollView>
@@ -61,7 +74,7 @@ image:{
    alignItems: 'center',
      borderColor: 'red',
     flex: 1,
-   
+   backgroundImage: 'linear-gradient(180deg,rgb(160, 168, 182) 0%, #192840 100%)',
     padding: 16,
   },
   title: {

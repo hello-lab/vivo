@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import YouTube from 'react-native-youtube-iframe';
 
-const YOUTUBE_API_KEY = 'AIzaSyA_mFSLuNJ_AadK6BEAfgU8xEkGWMkjG00'; // Replace with your YouTube API key
+const YOUTUBE_API_KEY = 'AIzaSyBTEwsjAwlV_H8BTd1ROXZ9Ztukoihfom8'; // Replace with your YouTube API key
 
 const YouTubeSearch = ({ navigation }: { navigation: any }) => {
   const [videos, setVideos] = useState<any[]>([]); // To store the video list
@@ -11,7 +11,7 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
   const [isPlayerReady, setIsPlayerReady] = useState(false); // To check if the YouTube player is ready
   const [error, setError] = useState<string | null>(null); // To store error message
   const [isPlaying, setIsPlaying] = useState(false); // To track whether the video is playing
-
+  const [clicked, setClicked] = useState(false); // To track whether the video is playing
   useEffect(() => {
     fetchVideos();
   }, [selectedCategory]); // Re-fetch videos whenever the category changes
@@ -24,8 +24,7 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
           selectedCategory
         )}&key=${YOUTUBE_API_KEY}&maxResults=10`
       );
-      const data = await response.json();
-      
+const data =await response.json();      //console.log(JSON.parse(data))
       // Check if data.items exists
       if (data.items && Array.isArray(data.items)) {
         const videoList = data.items.map((item: any) => ({
@@ -45,12 +44,14 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
 
   const handleSelectVideo = (videoId: string) => {
     setSelectedVideoId(videoId); // Set the selected video ID
+    setClicked(true); // Set clicked to true
     setIsPlaying(true); // Set video to play on selection
   };
 
   const handleGoBack = () => {
-    setSelectedVideoId(null); // Reset video selection
-    setIsPlaying(false); // Stop the video playback
+    //setSelectedVideoId(null); // Reset video selection
+    setClicked(false); // Reset clicked state
+    //setIsPlaying(false); // Stop the video playback
   };
 
   const handleRefresh = () => {
@@ -76,48 +77,46 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
   return (
     <View style={styles.container}>
       {/* Back button if video is selected */}
-      {selectedVideoId ? (
-        <>
+        
+        {(clicked)?
+        <View style={styles.thumbnailsContainer}>
           {/* Display the thumbnail above the YouTube player */}
-          <View style={styles.thumbnailsContainer}>
-            <Image
-              source={{ uri: videos.find((video) => video.id === selectedVideoId)?.thumbnail }}
-              style={styles.thumbnails}
-            />
-          </View>
-
+          
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>❌</Text>
+          </TouchableOpacity>
           {/* Video title box */}
-          <View style={styles.videoTitleBox}>
-            <Text style={styles.videoTitle}>
-              {videos.find((video) => video.id === selectedVideoId)?.title}
-            </Text>
-          </View>
+          
 
           {/* Display the YouTube player if a video is selected */}
           <YouTube
             videoId={selectedVideoId} // Use the selected video ID
             play={isPlaying} // Play or pause the video based on the state
-            fullscreen={true} // Play in fullscreen
-            loop={false} // Disable looping
+            // Play in fullscreen
+           height={200}
             onChangeState={handlePlayerStateChange} // Update the play state when video changes
             onReady={() => setIsPlayerReady(true)} // Set player ready flag
             onError={(e) => console.error('Error playing video:', e)} // Log errors
-            style={styles.videoPlayer}
+           
           />
+          <View style={{alignContent: 'center', justifyContent: 'center',}}>
+ <View style={styles.videoTitleBox}>
+            <Text style={styles.videoTitle}>
+              {videos.find((video) => video.id === selectedVideoId)?.title}
+            </Text>
+          </View>
 
-          {/* Play/Pause Button */}
+        <View style={styles.buttonpar}>
           <TouchableOpacity onPress={togglePlayPause} style={styles.playPauseButton}>
             <Text style={styles.playPauseButtonText}>
-              {isPlaying ? 'Pause' : 'Play'}
+              {isPlaying ? '⏸️' : '▶️'}
             </Text>
           </TouchableOpacity>
+         </View>
+          </View>
+        </View>:<></>}
 
-          {/* Back to Menu Button at the bottom */}
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back to Menu</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
+        
         <>
           {/* Show error message if an error occurs */}
           {error && <Text style={styles.errorText}>{error}</Text>}
@@ -139,27 +138,21 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
               <Text style={styles.categoryButtonText}>Calming Music</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => handleCategoryChange('relaxing audiobooks')}
+              onPress={() => handleCategoryChange('relaxing audiobooks for nicotine addiction ')}
               style={[
                 styles.categoryButton,
-                selectedCategory === 'relaxing audiobooks' && styles.selectedCategoryButton,
+                selectedCategory === 'relaxing audiobooks for nicotine addiction ' && styles.selectedCategoryButton,
               ]}
             >
               <Text style={styles.categoryButtonText}>Audiobooks</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleCategoryChange('encouraging anti nicotine motivational quotes')}
-              style={[
-                styles.categoryButton,
-                selectedCategory === 'motivational quotes' && styles.selectedCategoryButton,
-              ]}
-            >
-              <Text style={styles.categoryButtonText}>Motivational Quotes</Text>
-            </TouchableOpacity>
+            
           </View>
 
+<View style={styles.sh}>
           {/* Display list of videos */}
           <FlatList
+         
             data={videos}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
@@ -171,52 +164,93 @@ const YouTubeSearch = ({ navigation }: { navigation: any }) => {
                 </View>
               </TouchableOpacity>
             )}
-          />
+          /></View>
         </>
-      )}
+      
 
       {/* Refresh Button at the bottom left */}
       <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
         <Text style={styles.refreshButtonText}>🔄</Text>
       </TouchableOpacity>
-    </View>
+      </View>
   );
 };
 
 const styles = StyleSheet.create({
+  sh:{
+    backgroundColor: '#acb8c0',
+    width: '100%',
+    alignItems: 'center',
+paddingTop: 20,
+fontFamily:'HeadingNow',
+borderTopRightRadius: 15,
+  },
+  thumbnailsContainer:{
+    position: 'absolute',
+    zIndex: 5,
+    width: '100%',
+    height: '100%',
+    padding: 20,
+    alignSelf: 'center',
+    //alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    fontFamily:'HeadingNow',
+    backgroundColor: 'rgba(37, 37, 37, 0.7)', // Semi-transparent background
+    borderRadius: 15,
+    display: 'flex',
+  }
+,
   container: {
     flex: 1,
-    alignItems: 'center',
+    fontFamily:'HeadingNow',
+    //alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f8f8f8',
+    padding: '5%',
+    
+    paddingTop: 50,
+    borderRadius: 15,
+   // backgroundColor: '#acb8c0',
   },
   header: {
     marginBottom: 10,
+    fontFamily: 'HeadingNow',
+
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+   // fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: 'HeadingNow',
+
   },
   categoryButtonContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20, // Add margin between buttons and video list
+    fontFamily: 'HeadingNow',
+
+
+    marginBottom: -8, // Add margin between buttons and video list
+  
+    padding: 0,
+    width: '100%',
   },
   categoryButton: {
     backgroundColor: '#91c4f6',
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 6,
-    marginLeft: 5,
+    //marginLeft: 1,
     marginRight: 5,
+    fontFamily: 'HeadingNow',
+    paddingBottom: 15,
   },
   categoryButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     color: 'white',
+    fontFamily: 'HeadingNow',
+
   },
   selectedCategoryButton: {
-    backgroundColor: '#1e5175', // Highlight selected category
+    backgroundColor: '#acb8c0', // Highlight selected category
   },
   videoItem: {
     marginBottom: 15,
@@ -228,12 +262,16 @@ const styles = StyleSheet.create({
     width: 300,
     alignItems: 'center',
     flexDirection: 'row',
+    fontFamily: 'HeadingNow',
+
   },
   thumbnail: {
     width: 100,
     height: 100,
     marginRight: 8,
     borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
   },
   thumbnails: {
     width: 250,
@@ -241,11 +279,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginTop: 200,
     borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
   },
   videoTitle: {
     fontSize: 16,
     color: '#333',
     flexShrink: 1,
+    fontFamily: 'HeadingNow',
+
   },
   videoPlayer: {
     width: '100%',
@@ -254,22 +296,27 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   videoTitleBox: {
-    backgroundColor: 'rgba(2, 163, 136, 0.7)', // Semi-transparent background
+    backgroundColor: '#91c4f6', // Semi-transparent background
     padding: 10,
-    position: 'absolute',
-    top: '40%',
-    left: '50%',
-    transform: [{ translateX: -150 }],
+   
+    marginBottom: 20,
     borderRadius: 15,
+    fontFamily: 'HeadingNow',
+
+  },
+
+  buttonpar:{
+    
   },
   playPauseButton: {
-    position: 'absolute',
-    top: '50%',
-    left: '59%',
-    transform: [{ translateX: -50 }, { translateY: 50 }],
-    backgroundColor: 'rgba(2, 163, 136, 0.7)',
+   
+    alignSelf: 'center',
+  fontFamily: 'HeadingNow',
+    backgroundColor: '#91c4f6',
     borderRadius: 25,
     padding: 15,
+    alignItems: 'center',
+    width: 55,
   },
   playPauseButtonText: {
     fontSize: 18,
@@ -277,9 +324,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    bottom: 30,
-    left: 138,
-    backgroundColor: 'rgba(2, 163, 136, 0.7)',
+    top: 30,
+    right: 20,
+    backgroundColor: '#91c4f6',
     padding: 10,
     borderRadius: 5,
   },

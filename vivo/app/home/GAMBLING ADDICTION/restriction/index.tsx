@@ -13,7 +13,12 @@ export default function HomeScreen(): JSX.Element {
 
     useEffect(() => {
         async function fetchData() {
-            try {
+           
+        }
+
+        fetchData();
+    }, []);
+ try {
                 // Fetch installed apps
                 getInstalledApps().then((apps) => {
                     const formattedApps = apps.map((app: any) => ({
@@ -43,17 +48,12 @@ export default function HomeScreen(): JSX.Element {
             } catch (error) {
                 console.error("Error fetching installed apps:", error);
             }
-        }
-
-        fetchData();
-    }, []);
-
     const saveRestrictedApps = async () => {
         try {
 
            
               
-            await AsyncStorage.setItem("restrictedApps", JSON.stringify(selectedApps));
+            AsyncStorage.setItem("restrictedApps", JSON.stringify(selectedApps));
             Alert.alert("Success", "Restricted apps saved!");
         } catch (error) {
             console.error("Error saving restricted apps:", error);
