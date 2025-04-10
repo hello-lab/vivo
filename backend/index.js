@@ -57,7 +57,7 @@ app.post("/gemini/generate", async (req, res) => {
   
       const response = await ai.models.generateContent({
         model: "gemini-2.0-flash-exp-image-generation",
-        contents: "always send pics in 9:16 ratio and generate a picture of "+prompt,
+        contents: prompt,
         config: {
             responseModalities: ["Text", "Image"],
         },
