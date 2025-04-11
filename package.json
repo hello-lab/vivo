@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "expo-notifications": "^0.29.14",
+    "expo": "~52.0.43",
+    "react": "18.3.1",
+    "react-native": "0.76.9"
+  },
+  "name": "vivo",
+  "version": "1.0.0",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/react": "~18.3.12"
+  }
+}
