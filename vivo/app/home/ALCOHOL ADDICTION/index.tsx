@@ -18,7 +18,7 @@ s(String(value))})
 AsyncStorage.getItem('accents').then((value) => {
   console.log(value);
 setcolor1(String(value))})
-  const server = 'http://192.168.29.29:3000/';
+  const server = 'https://vivo.niyogi.hackclub.app/';
   AsyncStorage.getItem('username').then((value) => {
     console.log(value);
     setUsername(String(value));
