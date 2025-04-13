@@ -11,7 +11,7 @@ export default  function HomeScren() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const server = 'https://vivo.niyogi.hackclub.app/';
+  const server = 'https://vivo.niyogi.hackclub.app';
   const [backgroundpic, s] = useState('');
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');

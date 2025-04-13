@@ -63,7 +63,7 @@ useEffect(() => {fetchJournalData();}, []);
         id: Math.random().toString(),
         //date: new Date().toISOString(),
       };
-      setMessages((previousMessages) => [journalData,...previousMessages, userMessage]);
+      setMessages((previousMessages) => [...previousMessages, userMessage]);
 
       setMessage(""); // Reset message input
       setError(""); // Reset error message

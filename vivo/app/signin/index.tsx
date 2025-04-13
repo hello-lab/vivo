@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import {
+  View, Text, TextInput, Image, StyleSheet, ScrollView,
+  TouchableOpacity, Alert, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginpic from '../../assets/images/loginpic.png';
 import { useRouter } from 'expo-router';
 
-export default function LoginScreen() {
+export default function AuthScreen() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [activeMenu, setActiveMenu] = useState<'signin' | 'signup'>('signin');
   const server = 'https://vivo.niyogi.hackclub.app/';
 
   const handleLogin = async () => {
@@ -20,19 +24,15 @@ export default function LoginScreen() {
     try {
       const response = await fetch(server + 'login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
-      console.log(data);
       if (data.token) {
         AsyncStorage.setItem('token', data.token);
         Alert.alert('Login Success');
-        console.log('Token stored successfully');
       } else {
-        // Alert.alert('Login Failed', data.data || 'An error occurred');
+        Alert.alert('Login Failed', data.data || 'An error occurred');
       }
     } catch (error) {
       console.error(error);
@@ -45,18 +45,14 @@ export default function LoginScreen() {
     try {
       const response = await fetch(server + 'register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
       const data = await response.json();
-      Alert.alert(data.data || 'An error occurred');
-
-      console.log('data');
-      console.log(data);
+      Alert.alert(data.data || 'Signup successful');
     } catch (error) {
       console.error(error);
+      Alert.alert('Signup Failed', 'An error occurred');
     }
   };
 
@@ -69,18 +65,38 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Image source={loginpic} style={styles.image} />
           <Text style={styles.txt}>GET READY TO KEEP ADDICTION AT BAY</Text>
+
+          {/* Toggle buttons */}
+          <View style={styles.switchBtns}>
+            <TouchableOpacity
+              style={[styles.switchBtn, activeMenu === 'signin' && styles.activeBtn]}
+              onPress={() => setActiveMenu('signin')}
+            >
+              <Text style={styles.btnText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.switchBtn, activeMenu === 'signup' && styles.activeBtn]}
+              onPress={() => setActiveMenu('signup')}
+            >
+              <Text style={styles.btnText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Form */}
           <TextInput
             style={styles.input}
             placeholder="Username"
             value={username}
             onChangeText={setUsername}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-          />
+          {activeMenu === 'signup' && (
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+            />
+          )}
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -88,13 +104,17 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
           />
+
           <View style={styles.btns}>
-            <TouchableOpacity style={styles.bttn} onPress={handleLogin}>
-              <Text style={styles.btnText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btn} onPress={handleSignup}>
-              <Text style={styles.btnText}>Signup</Text>
-            </TouchableOpacity>
+            {activeMenu === 'signin' ? (
+              <TouchableOpacity style={styles.bttn} onPress={handleLogin}>
+                <Text style={styles.btnText}>Login</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.btn} onPress={handleSignup}>
+                <Text style={styles.btnText}>Signup</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -127,9 +147,20 @@ const styles = StyleSheet.create({
     fontFamily: 'HeadingNow',
     color: 'white',
   },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+    width: 320,
+    borderRadius: 25,
+    backgroundColor: 'white',
+  },
   btns: {
+    marginTop: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: 320,
   },
   btn: {
@@ -157,14 +188,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'HeadingNow',
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-    width: 320,
+  switchBtns: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+    gap: 10,
+  },
+  switchBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 25,
-    backgroundColor: 'white',
+    borderColor: 'white',
+    borderWidth: 1,
+  },
+  activeBtn: {
+    backgroundColor: '#5da9f6',
+    borderColor: '#5da9f6',
   },
 });

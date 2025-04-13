@@ -153,23 +153,29 @@ AsyncStorage.getItem('apointments').then((value) => {
     
  async function fetchData() {
             try {
-                const storedUsername = AsyncStorage.getItem('username');
-                //console.log(typeof(storedUsername))
-                if (typeof(storedUsername)!='object') setUsername(storedUsername);
-                const email = AsyncStorage.getItem('email');
-                if (typeof(email)!='object') setEmail(email);
+                AsyncStorage.getItem('username').then((value) => {
+                    console.log(value);
+                    setUsername(String(value));
+                  })
+                  AsyncStorage.getItem('email').then((value) => {
+                    console.log(value);
+                setEmail(String(value))})
+
                 const storedNumbers = await AsyncStorage.getItem('numbers'); // Changed to await
                 if (typeof(storedNumbers)!='object') 
 
                 setNumbers(JSON.parse(storedNumbers)); // Moved this line outside of the promise
                 // console.log(storedNumbers)
                 //if (typeof(storedNumbers)!='object') 
-                  
-                const restricted = AsyncStorage.getItem('restrictedApps');
-                if (typeof(restricted)!='object') setRestricted(JSON.parse(restricted))
+                AsyncStorage.getItem('restrictedApps').then((value) => {
+                    console.log(value);
+                    setRestricted(JSON.parse(value))
+                })
+                AsyncStorage.getItem('heartRateHistory').then((value) => {
+                    setHeartrate(value ? JSON.parse(value) : [])
+                })
                     const existingData = AsyncStorage.getItem('heartRateHistory');
-                if (typeof(existingData)!='object') 
-                setHeartrate(existingData ? JSON.parse(existingData) : [])
+                
             } catch (error) {
                 console.error(error);
             }

@@ -64,6 +64,7 @@ export default function Layout() {
               name="index"
               options={{
                 title: 'DOPA RECOVERY',
+                headerShown:false,
                 headerStyle: styles.header,
                 headerTitleStyle: styles.headerText,
               }}
@@ -84,6 +85,7 @@ export default function Layout() {
                 headerTitleStyle: styles.headerText,
               }}
             />
+            
             <Stack.Screen
               name="home"
               options={{

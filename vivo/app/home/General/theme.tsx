@@ -63,7 +63,7 @@ export default function HomeScreen() {
       setError("");
       setImageBase64("");
 
-      const response = await fetch("https://vivo.niyogi.hackclub.app/gemini/generate", {
+      const response = await fetch("https://vivo.niyogi.hackclub.appgemini/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

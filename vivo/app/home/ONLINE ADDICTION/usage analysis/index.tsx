@@ -62,7 +62,7 @@ useEffect(() => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const server = 'https://vivo.niyogi.hackclub.app/';
+  const server = 'https://vivo.niyogi.hackclub.app';
   const [backgroundpic, s] = useState('');
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');
@@ -244,7 +244,7 @@ setcolor1(String(value))})
         
           
     <ScrollView style={styles.fullh}>
-    <Text style={styles.title}>Hey {username} Looks like you use <Text style={{color: color1}}>{appUsage[0].packageName.split('.')[appUsage[0].packageName.split('.').length - 1]}</Text> you wanna restrict those?    </Text>  
+    <Text style={styles.title}>Hey {username} Looks like you use <Text style={{color: color1}}>{appUsage[0].packageName.split('.')[appUsage[0].packageName.split('.').length - 1]}</Text> you wanna restrict that?    </Text>  
  
     <View style={styles.headrow}>
       <Text style={[styles.columnHeader, { flex: 2 }]}>Package Name</Text>

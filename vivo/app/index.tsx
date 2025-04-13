@@ -1,8 +1,10 @@
-import React, { useEffect ,useState} from 'react';
-import { View, Text, StyleSheet, Button, Alert, Linking, ImageBackground } from 'react-native';
+import React, { useEffect ,useRef,useState} from 'react';
+import { View, Text, StyleSheet, Button, Alert, Linking, ImageBackground,Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { NativeModules } from 'react-native';
+import AnimatedSplash from './SplashScreen';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { Video } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const { AppBlockServiceStarter } = NativeModules;
 const image = {uri: 'https://legacy.reactjs.org/logo-og.png'};
@@ -10,7 +12,10 @@ import notif from '../components/Notifs';
 const Index = () => {
   const router = useRouter();
   const [username, setUsername] = useState(''); 
+  const [showSplash, setShowSplash] = useState(true);
   notif()
+  const videoRef = useRef<Video>(null);
+
   useEffect(() => {
     const requestPermissions = async () => {
       try {
@@ -44,17 +49,17 @@ const Index = () => {
     requestPermissions();
   }, []);
 
-  return (
-    <View style={styles.container}>
-     
+  return  <>  {(showSplash)? <AnimatedSplash onAnimationEnd={() => setShowSplash(false)} />:
+  <View style={styles.container}>
+      
       <Text style={styles.text}>Welcome to Vivo</Text>
       <Button title="Sign In" onPress={() => router.push('/signin')} />
-      <Button  title="help" onPress={() => router.push('/home/ONLINE ADDICTION/restriction')} />
+      <Button  title="help" onPress={() => router.push('/home/ONLINE ADDICTION/routine generation')} />
 
       
-    </View>
-  );
-};
+    </View>}</>}
+  
+
 
 const styles = StyleSheet.create({
   container: {
@@ -62,6 +67,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#192840',
+    alignContent:'center'
   },
   text: {
     fontSize: 20,

@@ -17,7 +17,7 @@ setcolor(String(value))})
 AsyncStorage.getItem('backgroundpic').then((value) => {
   console.log(value);
 s(String(value))})
-  const server = 'https://vivo.niyogi.hackclub.app/';
+  const server = 'https://vivo.niyogi.hackclub.app';
  useEffect(() => {
     async function fetchData() {
       try{
