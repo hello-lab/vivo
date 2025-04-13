@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
+import { center } from '@shopify/react-native-skia';
 
 
 export default function HomeScreen() {
@@ -19,9 +20,11 @@ export default function HomeScreen() {
     const [backgroundcolor, setBackgroundcolor] = useState('');
     const [tertiarycolor, setTertiarycolor] = useState('');
     const [primarycolor, setPrimarycolor] = useState('');
+    const [appointments, setAppointments] = useState([]);
 
-
-
+AsyncStorage.getItem('apointments').then((value) => {
+    setAppointments(JSON.parse(String(value)) || []);
+})
     AsyncStorage.getItem('backgroundcolor').then((value) => {
         ;
         setcolor(String(value));
@@ -96,6 +99,7 @@ export default function HomeScreen() {
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingVertical: 5,
+            marginBottom: 5,
         },
         txt: {
             fontSize: 20,
@@ -116,6 +120,9 @@ export default function HomeScreen() {
             fontSize: 18,
             color: '#555',
             textAlign: 'center',
+            alignSelf:'center',
+            alignContent:'center',
+            fontFamily: 'SpaceMono',
         },
         btn: {
             height: 50,
@@ -320,7 +327,37 @@ export default function HomeScreen() {
                                 <Text style={styles.btnText}>Add Number</Text>
                             </TouchableOpacity>
                         </View>
-                        
+                        <View style={styles.section}>
+                            <Text style={styles.subtitle}>Appointments </Text>
+                            <View style={styles.numbersContainer}>
+                            {appointments.length === 0 ? (
+                                    <Text style={styles.noNumbersText}>No Appointments added yet.</Text>
+                                ) : (
+                                    appointments.map((appointment, index) => (
+                                        <View key={index} style={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            paddingVertical: 5,
+                                            marginBottom: 5,
+                                            backgroundColor: color1,
+                                            borderRadius: 10,
+                                            alignContent:'center',
+                                            
+                                           
+                                            }}>
+                                            <Text style={styles.noNumbersText}>
+                                                {`${appointment.therapistName}`} 
+                                                { `\n ${appointment.date} ${appointment.time}`}
+                                            </Text>
+                                           
+                                        </View>
+                                    ))
+                                )}
+                            </View>
+
+                            
+                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

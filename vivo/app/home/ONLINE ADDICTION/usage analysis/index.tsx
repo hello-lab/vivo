@@ -4,9 +4,61 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
+import { requestUsagePermission,getUsageLast24Hr,checkPackagePermission, getUsageCustomRange } from 'react-native-app-usage';
+import { PieChart } from "react-native-chart-kit";
+import { Dimensions } from 'react-native';
+import PieChartt from 'react-native-pie-chart'
 export default  function HomeScren() {
     const router = useRouter();
   
+    // ...
+       const [appUsage, setAppUsage] = useState([]);
+      const [loading, setLoading] = useState(true);
+    
+useEffect(() => {
+  checkPackagePermission().then(permissionGranted=>{
+    if(!permissionGranted)
+    {
+      requestUsagePermission() ;// If permission not granted then request for permission
+    }
+    else{
+      getUsageCustomRange(String((new Date(new Date().setHours(0,0,0,500))).getTime()), String(new Date().getTime()), (data)=>{
+       
+    let allAppUsage=data;
+        // Filter out system apps and apps with 0 usage time
+        allAppUsage = data.filter(app => 
+          app.totalForegroundTime > 0
+        ).sort((a, b) => b.totalForegroundTime - a.totalForegroundTime)
+        .reduce((unique, app) => {
+          if (!unique.some(item => item.packageName === app.packageName)) {
+            unique.push(app);
+          }
+          return unique;
+        }, [])
+        
+        setAppUsage(allAppUsage)
+
+        const newPieData = allAppUsage.map((app, index) => ({
+          usage: app.totalForegroundTime,
+          color: `hsl(${(index * 137.5) % 360}, 100%, 70%)`,
+        }));
+        setPieData(newPieData);
+
+        const newSeries = allAppUsage.map((app, index) => ({
+          name: app.packageName.split('.')[app.packageName.split('.').length - 1],
+          value: app.totalForegroundTime,
+          color: `hsl(${(index * 137.5) % 360}, 100%, 70%)`,
+        }));
+        setSeries(newSeries);
+      })
+    }
+    
+  }).catch(error=>{
+    console.log('error==>',error);
+  })
+  
+})
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,19 +66,58 @@ export default  function HomeScren() {
   const [backgroundpic, s] = useState('');
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');
+  const [primary, setprimary] = useState('');
+  const screenWidth = Dimensions.get("window").width;
+  
+          const [pieData, setPieData] = useState([]);
+          const [series, setSeries] = useState([]);
 
-AsyncStorage.getItem('backgroundcolor').then((value) => {
-    console.log(value);
-setcolor(String(value))})
-AsyncStorage.getItem('backgroundpic').then((value) => {
-  console.log(value);
-s(String(value))})
-AsyncStorage.getItem('accents').then((value) => {
-  console.log(value);
-setcolor1(String(value))})
+          
+'hsl(1 % 360}, 80%, 35%)'
 const styles = StyleSheet.create({
+  appUsageRow: {
+    backgroundColor: color1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    fontFamily: 'HeadingNow',
+  },
+  headrow: {
+    fontFamily: 'HeadingNow',
+    backgroundColor: color1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  columnHeader: {
+    fontSize: 16,
+    
+    color: primary,
+    textAlign: 'center',
+    fontFamily: 'HeadingNow',
+  },
+  appName: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'monospace',
+    
+  },
+  usageTime: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
   fullh:{
-    height: '100%', borderColor: 'red'
+    height: '100%',
+    borderColor: 'red',
+   zIndex: 5, 
+      borderRadius: 5,
+      width: '95%',
+
   },
   btn1:{
     position: 'absolute',
@@ -47,7 +138,9 @@ image:{
      borderColor: 'red',
     flex: 1,
    backgroundColor: color,
+
     padding: 16,
+    zIndex: 5,
   },
   title: {
     fontSize: 28,
@@ -56,7 +149,7 @@ image:{
     top: 0,
     position: 'fixed',
     fontFamily: 'HeadingNow',
-    color: '#91c4f6',
+    color: primary,
   },
   txt: {
     fontSize: 20,
@@ -109,8 +202,21 @@ image:{
 });
 
  useEffect(() => {
-  
-    async function fetchData() {
+  AsyncStorage.getItem('backgroundcolor').then((value) => {
+    console.log(value);
+setcolor(String(value))})
+AsyncStorage.getItem('backgroundpic').then((value) => {
+  console.log(value);
+s(String(value))})
+AsyncStorage.getItem('accents').then((value) => {
+  console.log(value);
+setcolor1(String(value))})
+
+  AsyncStorage.getItem('primary').then((value) => {
+    console.log(value);
+    setprimary(String(value));
+  })
+     function fetchData() {
       try{
   AsyncStorage.getItem('username').then((value) => {
     console.log(value);
@@ -127,16 +233,46 @@ image:{
     fetchData();}, []);
   return (
    
-    <SafeAreaView style={styles.fullh}>
-      
-    <ScrollView contentContainerStyle={styles.container}>
-       <Image 
+    <SafeAreaView style={styles.container}>
+      <Image 
              source={{ uri: backgroundpic }}
              style={StyleSheet.absoluteFill}
            />
-      <Text style={styles.title}>Welcome, {username}!</Text>
-           
-    </ScrollView>
+
+  {series.length==0?<Text style={styles.title}>Loading...,</Text>     : <><PieChartt widthAndHeight={200} series={series} cover={0.6}/>
+
+        
+          
+    <ScrollView style={styles.fullh}>
+    <Text style={styles.title}>Hey {username} Looks like you use <Text style={{color: color1}}>{appUsage[0].packageName.split('.')[appUsage[0].packageName.split('.').length - 1]}</Text> you wanna restrict those?    </Text>  
+ 
+    <View style={styles.headrow}>
+      <Text style={[styles.columnHeader, { flex: 2 }]}>Package Name</Text>
+      <Text style={[styles.columnHeader, { flex: 1 }]}>Hours</Text>
+      <Text style={[styles.columnHeader, { flex: 1 }]}>Minutes</Text>
+    </View>
+    {appUsage.map(app => (
+      <View key={app.packageName} style={styles.appUsageRow}>
+        <View style={{
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: `hsl(${(appUsage.indexOf(app) * 137.5) % 360}, 70%, 50%)`,
+          marginRight: 8,
+          alignSelf: 'center'
+        }} />
+        <Text style={[styles.appName, { flex: 2 }]}>
+          {app.packageName.split('.')[app.packageName.split('.').length - 1]}
+        </Text>
+        <Text style={[styles.usageTime, { flex: 1 }]}>
+          {Math.floor(app.totalForegroundTime / (60*60*1000))}
+        </Text>
+        <Text style={[styles.usageTime, { flex: 1 }]}>
+          {Math.ceil(((app.totalForegroundTime/1000) % (60*60)) / 60)}
+        </Text>
+      </View>
+                ))}
+    </ScrollView></>}
     </SafeAreaView>
   );
 }

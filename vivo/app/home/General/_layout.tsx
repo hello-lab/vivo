@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontStyle } from "@shopify/react-native-skia";
 export default function RootLayout(){
     const [fontsLoaded] = useFonts( {
-        "HeadingNow":require("../../../assets/fonts/HeadingNowTrial-68Heavy.ttf"),
+        //"HeadingNow":require("../../../assets/fonts/HeadingNowTrial-68Heavy.ttf"),
         "SpaceMono":require("../../../assets/fonts/SpaceMono-Regular.ttf")
     })
 
@@ -90,6 +90,7 @@ useEffect(()=>{
         headerStyle: styles.header,
         headerTitleStyle: styles.headerText,
         title: 'Appointment',
+       
       }}
     /> <Drawer.Screen
     name="dailyjournal" // This is the name of the page and must match the url from root
@@ -109,12 +110,31 @@ useEffect(()=>{
   }}
 />
 <Drawer.Screen
+  name="webusage copy" // This is the name of the page and must match the url from root
+  options={{
+    drawerLabel: 'Web Usage',
+    headerStyle: styles.header,
+    headerTitleStyle: styles.headerText,
+    title: 'Web Usage',
+  }}
+/>
+<Drawer.Screen
   name="webusage" // This is the name of the page and must match the url from root
   options={{
     drawerLabel: 'Web Usage',
     headerStyle: styles.header,
     headerTitleStyle: styles.headerText,
     title: 'Web Usage',
+    drawerItemStyle: { display: 'none' }
+  }}
+/>
+<Drawer.Screen
+  name="chat room" // This is the name of the page and must match the url from root
+  options={{
+    drawerLabel: 'Forum',
+    headerStyle: styles.header,
+    headerTitleStyle: styles.headerText,
+    title: 'Forum Discussion',
   }}
 />
 <Drawer.Screen
@@ -138,12 +158,13 @@ useEffect(()=>{
 <Drawer.Screen
   name="heartrate3" // This is the name of the page and must match the url from root
   options={{
-    drawerLabel: 'Heart Rate(BEST)',
+    drawerLabel: 'Heart Rate',
     headerStyle: styles.header,
     headerTitleStyle: styles.headerText,
     title: 'Heart Rate',
   }}
 />
+
       </Drawer>
 
 

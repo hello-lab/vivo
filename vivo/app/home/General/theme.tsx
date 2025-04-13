@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LineChart } from "react-native-chart-kit";
 import { launchImageLibraryAsync }from 'expo-image-picker';
-
+import * as FileSystem from "expo-file-system";
 import { Dimensions ,Image} from "react-native";
 import ColorPicker, {
   Panel1,
@@ -28,7 +28,7 @@ import ColorPicker, {
 } from "reanimated-color-picker";
 
 export default function HomeScreen() {
-    const [prompt, setPrompt] = useState("Can you add a llama next to the image?");
+    const [prompt, setPrompt] = useState("");
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export default function HomeScreen() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({prompt }),
       });
 
     const data = await response.json();
@@ -78,20 +78,23 @@ export default function HomeScreen() {
 
     if (data?.image) {
         const imageUri = `data:image/png;base64,${data.image}`;
-        setImageBase64(data.image);
+        // Convert base64 to file uri and save to media library
+        const filename = `generated-${Date.now()}.png`;
+        const fileUri = FileSystem.documentDirectory + filename;
+        await FileSystem.writeAsStringAsync(fileUri, data.image, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+       // const asset = await MediaLibrary.createAssetAsync(fileUri);
+        //setImageBase64(data.image);
         
         // Add the generated image to backgroundpics
-        setBackgroundpics(oldArray => [...oldArray, imageUri]);
-        AsyncStorage.setItem("backgroundpics", JSON.stringify([...backgroundpics, imageUri]));
+        setBackgroundpics(oldArray => [...oldArray, fileUri]);
+        AsyncStorage.setItem("backgroundpics", JSON.stringify([...backgroundpics, fileUri]));
     } else {
         setError("Image not generated.");
     }
 
-      if (data?.image) {
-        setImageBase64(data.image);
-      } else {
-        setError("Image not generated.");
-      }
+    
     } catch (err) {
       console.error(err);
       setError("Failed to generate image.");
@@ -103,7 +106,7 @@ export default function HomeScreen() {
 
   
   const onSelectColor = ({ hex }: { hex: string }) => {
-    const [image, setImage] = useState<string | null>(null);
+    //const [image, setImage] = useState<string | null>(null);
 
   
     // Save and set the selected color
@@ -302,6 +305,7 @@ function setbg(uri: string) {
     setNumbers(updatedNumbers);
     AsyncStorage.setItem("numbers", JSON.stringify(updatedNumbers));
   };
+  //awsait Updates.reloadAsync();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: backgroundcolor }}>

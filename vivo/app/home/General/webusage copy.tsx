@@ -1,17 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { center } from '@shopify/react-native-skia';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { SafeAreaView, TextInput, Button, FlatList, Text, StyleSheet, View, TouchableOpacity,Image, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 const App: React.FC = () => {
   
   const [load, setLoad] = useState<boolean>(true); // Default AI name
-  
+  const webViewRef = useRef(null)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [nexdns,setnexdns]=useState('')
+ 
+
+
   const [backgroundpic, s] = useState('');
       const [color, setcolor] = useState('');
       const [color1, setcolor1] = useState('');
 
+
+      AsyncStorage.getItem('nextdns').then((value) => {
+        console.log(value);
+    setnexdns(String(value))})
     AsyncStorage.getItem('backgroundcolor').then((value) => {
         console.log(value);
     setcolor(String(value))})
@@ -21,7 +30,8 @@ const App: React.FC = () => {
     AsyncStorage.getItem('accents').then((value) => {
       console.log(value);
     setcolor1(String(value))})
-  
+   const initialUrl = 'https://api.nextdns.io/profiles/'+nexdns;
+  const targetUrl = 'https://my.nextdns.io/3285a4/setup';
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -84,7 +94,27 @@ const App: React.FC = () => {
 
 
 
+  const saveCookies = async () => {
+    if (webViewRef.current) {
+      const cookiesString = await webViewRef.current.injectJavaScript(`
+        document.cookie
+      `);
+    
+         
+    }
+  };
 
+  const handleNavigationStateChange = (navState) => {
+    if (navState.url === initialUrl && !navState.loading && !initialLoadComplete) {
+      console.log('Initial page loaded.');
+      setInitialLoadComplete(true);
+      // Call the function to save cookies and redirect
+      saveCookies();
+    } else if (navState.url === targetUrl) {
+      console.log('Successfully redirected to the target page.');
+      // You can now interact with the target page with the saved cookies
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Image 
@@ -92,24 +122,12 @@ const App: React.FC = () => {
         style={StyleSheet.absoluteFill}
       />
 
-    {!load?<View style={{ flex: 1,zIndex:5,backgroundColor:color,height:'120%',width:'120%',position: 'absolute',top: 0, }}><Text style={{color:color1,fontFamily:'HeadingNow',}}>Loading..</Text></View>:<></>} 
     
  <View style={{ flex: 1, borderRadius: 10, overflow: 'hidden', zIndex: 1 }}>
-    <WebView
-    
-      source={{ uri: 'http://pub16.bravenet.com/forum/1374095684/' }}
-      //renderLoading={() => <Text style={{color:color1,fontFamily:'HeadingNow'}}>Loading..</Text>}
-      startInLoadingState={true}
-      onLoadStart={() => {
-        //
-        // setLoad(true);
-        console.log('Loading started');
-        
-      }}
-      onLoadEnd={() => {
-        console.log('Loading ended');
-       setLoad(false);
-      }}
+ <WebView
+      ref={webViewRef}
+      source={{ uri: targetUrl }}
+      onNavigationStateChange={handleNavigationStateChange}
     />
 </View>
     

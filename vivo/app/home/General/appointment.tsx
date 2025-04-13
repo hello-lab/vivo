@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 export default  function HomeScren() {
     const router = useRouter();
-  
+  const [therapists, setTherapists] = useState([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +14,23 @@ export default  function HomeScren() {
   const [backgroundpic, s] = useState('');
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');
+const [accents, setAccents] = useState('');
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      try {
+        const response = await fetch(`${server}therapists`);
+        const data = await response.json();
+        console.log(data)
+        setTherapists(data);
+      } catch (error) {
+        console.error('Error fetching therapists:', error);
+        //Alert.alert('Error', 'Failed to load therapists');
+      }
+    };
+
+    fetchTherapists();
+  }, []);
+
 
 AsyncStorage.getItem('backgroundcolor').then((value) => {
     console.log(value);
@@ -43,9 +60,9 @@ image:{
 
 },
   container: {
-   alignItems: 'center',
+  
      borderColor: 'red',
-    flex: 1,
+     flexGrow: 1,
    backgroundColor: color,
     padding: 16,
   },
@@ -127,15 +144,53 @@ image:{
     fetchData();}, []);
   return (
    
-    <SafeAreaView style={styles.fullh}>
+    <SafeAreaView style={{flex:1}}>
       
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}  keyboardShouldPersistTaps="handled">
        <Image 
              source={{ uri: backgroundpic }}
              style={StyleSheet.absoluteFill}
            />
-      <Text style={styles.title}>Welcome, {username}!</Text>
-           
+            <View style={{  width: '100%' }}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 24, color: color1, fontFamily: 'HeadingNow' }}>Available Therapists</Text>
+            </View>
+            
+            {therapists?.map((therapist) => (
+              <TouchableOpacity 
+              key={therapist.id}
+              style={{ 
+                backgroundColor: color1,
+                padding: 15,
+                borderRadius: 10,
+                marginBottom: 15,
+               // shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                elevation: 3,
+              }}
+              onPress={() => router.push(`/booking/${therapist.id}`)}
+              >
+              <View style={{ flexDirection: 'row' }}>
+                <Image 
+                source={{ uri: therapist.image || 'https://placeholderimage.com/default' }}
+                style={{ width: 80, height: 80, borderRadius: 40 }}
+                />
+                <View style={{ marginLeft: 15, flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{therapist.name}</Text>
+                <Text style={{ color: '#666' }}>{therapist.specialization}</Text>
+                <Text style={{ color: '#91c4f6' }}>Rs{therapist.hourlyRate}/hour</Text>
+                <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                  <Text>⭐ {therapist.rating}</Text>
+                  <Text style={{ marginLeft: 10 }}>{therapist.availability}</Text>
+                </View>
+                </View>
+              </View>
+              </TouchableOpacity>
+            ))}
+            
+            
+            </View>
     </ScrollView>
     </SafeAreaView>
   );

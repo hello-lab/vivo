@@ -1,52 +1,104 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useState } from 'react';
-import { SafeAreaView, TextInput, Button, FlatList, Text, StyleSheet, View, TouchableOpacity,Image, Linking } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  TextInput,
+  Button,
+  FlatList,
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Image,
+  Linking,
+} from "react-native";
 
 const App: React.FC = () => {
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<{ text: any; user: string; id: string; style?: any }[]>([]);
-  const [error, setError] = useState<string>('');
-  const [aiName, setAiName] = useState<string>('Helper'); // Default AI name
-  const [backgroundpic, s] = useState('');
-      const [color, setcolor] = useState('');
-      const [color1, setcolor1] = useState('');
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<
+    { text: any; user: string; id: string; style?: any }[]
+  >([]);
+  const [error, setError] = useState<string>("");
+  const [aiName, setAiName] = useState<string>("Helper"); // Default AI name
+  const [backgroundpic, s] = useState("");
+  const [color, setcolor] = useState("");
+  const [color1, setcolor1] = useState("");
+  const [journal, setjournal] = useState([]);
 
-    AsyncStorage.getItem('backgroundcolor').then((value) => {
-        console.log(value);
-    setcolor(String(value))})
-    AsyncStorage.getItem('backgroundpic').then((value) => {
-      console.log(value);
-    s(String(value))})
-    AsyncStorage.getItem('accents').then((value) => {
-      console.log(value);
-    setcolor1(String(value))})
+
+  
+  AsyncStorage.getItem("backgroundcolor").then((value) => {
+    console.log(value);
+    setcolor(String(value));
+  });
+  AsyncStorage.getItem("backgroundpic").then((value) => {
+    console.log(value);
+    s(String(value));
+  });
+  AsyncStorage.getItem("accents").then((value) => {
+    console.log(value);
+    setcolor1(String(value));
+  });
+
+  const fetchJournalData = () => AsyncStorage.getItem("journal").then((value) => {
+    // console.log(value);
+     setjournal(JSON.parse(value || '[]'));
+   });
+
+
+useEffect(() => {fetchJournalData();}, []);
+
+  
   const handleSendMessage = async () => {
     if (message.trim()) {
-      const userMessage = { text: message, user: 'You', id: Math.random().toString() };
-      setMessages((previousMessages) => [...previousMessages, userMessage]);
-    
-      setMessage(''); // Reset message input
-      setError(''); // Reset error message
+      const userMessage = {
+        text: message,
+        user: "You",
+        id: Math.random().toString(),
+
+      };
+      const journalData = {
+        text:  "journal entry and you will give a response to the user based on the journal entry in an array the first element is date the second is the entry and the third element is a boolean for whether the person relapsed. A person has relapsed only if the last value is true :"+journal[0],
+        user: "App",
+        id: Math.random().toString(),
+        //date: new Date().toISOString(),
+      };
+      setMessages((previousMessages) => [journalData,...previousMessages, userMessage]);
+
+      setMessage(""); // Reset message input
+      setError(""); // Reset error message
 
       try {
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmgd67c4lWZtjBPB99TUsETlJtqmhcUx4', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: message }, // Use user input as the text to generate a response
-                ],
-              },
+        const response = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmgd67c4lWZtjBPB99TUsETlJtqmhcUx4",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+          {
+            parts: [
+              ...messages.map(msg => ({
+                text: `${msg.user}: ${msg.text}`
+              })), // Include conversation history
+              { text: message } // Add current message
             ],
-          }),
-        });
+          },
+              ],
+              systemInstruction: {
+          role: 'user',
+          parts: [{
+            text: 'You are "Helper", an AI therapist, you should act proffesional and be friendly to the user. You work with DopaCare and App that helps in fighting addiction , you should never refer yourself as a therapist but as a Helper\n'
+          }]
+              },
+            }),
+          }
+        );
 
         const data = await response.json();
-        console.log('Full API Response:', data);
+        console.log("Full API Response:", data);
 
         if (data.error) {
           setError(`Error: ${data.error.message}`);
@@ -54,15 +106,19 @@ const App: React.FC = () => {
         }
 
         if (!data?.candidates || data.candidates.length === 0) {
-          setError('No response generated.');
+          setError("No response generated.");
           return;
         }
 
         const content = data?.candidates?.[0]?.content;
-        let aiMessageText = 'Sorry, no response generated.';
+        let aiMessageText = "Sorry, no response generated.";
         let aiMessageStyle = {}; // Default styles
 
-        if (content && Array.isArray(content.parts) && content.parts.length > 0) {
+        if (
+          content &&
+          Array.isArray(content.parts) &&
+          content.parts.length > 0
+        ) {
           const generatedText = content.parts[0]?.text;
           if (generatedText) {
             aiMessageText = generatedText.trim();
@@ -81,7 +137,7 @@ const App: React.FC = () => {
 
         setMessages((previousMessages) => [...previousMessages, aiMessage]);
       } catch (error) {
-        setError('Something went wrong!');
+        setError("Something went wrong!");
       }
     }
   };
@@ -93,56 +149,56 @@ const App: React.FC = () => {
     },
     input: {
       height: 40,
-      borderColor: 'gray',
+      borderColor: "gray",
       borderWidth: 1,
       marginBottom: 12,
       paddingHorizontal: 8,
       borderRadius: 8,
       fontSize: 16,
-      color: '#333',
+      color: "#333",
       backgroundColor: color1,
     },
     userMessage: {
       fontSize: 18,
       padding: 10,
-      backgroundColor: '#91c4f6',
+      backgroundColor: "#91c4f6",
       borderRadius: 8,
       marginVertical: 4,
-      fontFamily: 'Arial',
-      color: '#000',
-      fontWeight: 'bold',
-      textAlign: 'left',
+      fontFamily: "Arial",
+      color: "#000",
+      fontWeight: "bold",
+      textAlign: "left",
     },
     aiMessage: {
       fontSize: 18,
       padding: 10,
-      backgroundColor: '#f1adc4',
+      backgroundColor: "#f1adc4",
       borderRadius: 8,
       marginVertical: 4,
-      fontFamily: 'Courier New',
-      color: '#00000',
-      fontWeight: 'normal',
-      textAlign: 'left',
+      fontFamily: "Courier New",
+      color: "#00000",
+      fontWeight: "normal",
+      textAlign: "left",
     },
     boldText: {
-      fontWeight: 'bold',
-      color: '#000', // Make bold text black or customize the color
+      fontWeight: "bold",
+      color: "#000", // Make bold text black or customize the color
     },
     italicText: {
-      fontStyle: 'italic',
-      color: '#000', // Make italic text grey or customize the color
+      fontStyle: "italic",
+      color: "#000", // Make italic text grey or customize the color
     },
     linkText: {
-      color: 'blue',
-      textDecorationLine: 'underline',
+      color: "blue",
+      textDecorationLine: "underline",
     },
     error: {
-      color: 'red',
+      color: "red",
       marginTop: 12,
       fontSize: 14,
     },
   });
-  
+
   // Function to parse Markdown and convert it into React Native components
   const parseMarkdown = (text: string) => {
     // Bold (**bold text**)
@@ -173,30 +229,42 @@ const App: React.FC = () => {
     const elements = [];
     let lastIndex = 0;
     let match;
-    
+
     while ((match = regex.exec(text)) !== null) {
       // Add plain text before the tag
       if (match.index > lastIndex) {
         elements.push(text.substring(lastIndex, match.index));
       }
-      
+
       // Add bold text
-      if (match[1] === 'bold') {
-        elements.push(<Text key={Math.random()} style={styles.boldText}>{match[2]}</Text>);
-      }
-      // Add italic text
-      else if (match[1] === 'italic') {
-        elements.push(<Text key={Math.random()} style={styles.italicText}>{match[2]}</Text>);
-      }
-      // Add link text
-      else if (match[1] === 'link') {
+      if (match[1] === "bold") {
         elements.push(
-          <Text key={Math.random()} style={styles.linkText} onPress={() => Linking.openURL(match[2])}>
+          <Text key={Math.random()} style={styles.boldText}>
             {match[2]}
           </Text>
         );
       }
-      
+      // Add italic text
+      else if (match[1] === "italic") {
+        elements.push(
+          <Text key={Math.random()} style={styles.italicText}>
+            {match[2]}
+          </Text>
+        );
+      }
+      // Add link text
+      else if (match[1] === "link") {
+        elements.push(
+          <Text
+            key={Math.random()}
+            style={styles.linkText}
+            onPress={() => Linking.openURL(match[2])}
+          >
+            {match[2]}
+          </Text>
+        );
+      }
+
       lastIndex = regex.lastIndex;
     }
 
@@ -210,10 +278,7 @@ const App: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={{ uri: backgroundpic }}
-        style={StyleSheet.absoluteFill}
-      />
+      <Image source={{ uri: backgroundpic }} style={StyleSheet.absoluteFill} />
       {/* Chat Messages */}
       <FlatList
         data={messages}
@@ -221,7 +286,7 @@ const App: React.FC = () => {
         renderItem={({ item }) => (
           <Text
             style={[
-              item.user === 'You' ? styles.userMessage : styles.aiMessage,
+              item.user === "You" ? styles.userMessage : styles.aiMessage,
               item.style, // Apply dynamic style if present
             ]}
           >
@@ -248,54 +313,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   input: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
     borderRadius: 8,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   userMessage: {
     fontSize: 18,
     padding: 10,
-    backgroundColor: '#91c4f6',
+    backgroundColor: "#91c4f6",
     borderRadius: 8,
     marginVertical: 4,
-    fontFamily: 'Arial',
-    color: '#000',
-    fontWeight: 'bold',
-    textAlign: 'left',
+    fontFamily: "Arial",
+    color: "#000",
+    fontWeight: "bold",
+    textAlign: "left",
   },
   aiMessage: {
     fontSize: 18,
     padding: 10,
-    backgroundColor: '#f1adc4',
+    backgroundColor: "#f1adc4",
     borderRadius: 8,
     marginVertical: 4,
-    fontFamily: 'Courier New',
-    color: '#00000',
-    fontWeight: 'normal',
-    textAlign: 'left',
+    fontFamily: "Courier New",
+    color: "#00000",
+    fontWeight: "normal",
+    textAlign: "left",
   },
   boldText: {
-    fontWeight: 'bold',
-    color: '#000', // Make bold text black or customize the color
+    fontWeight: "bold",
+    color: "#000", // Make bold text black or customize the color
   },
   italicText: {
-    fontStyle: 'italic',
-    color: '#000', // Make italic text grey or customize the color
+    fontStyle: "italic",
+    color: "#000", // Make italic text grey or customize the color
   },
   linkText: {
-    color: 'blue',
-    textDecorationLine: 'underline',
+    color: "blue",
+    textDecorationLine: "underline",
   },
   error: {
-    color: 'red',
+    color: "red",
     marginTop: 12,
     fontSize: 14,
   },
