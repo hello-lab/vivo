@@ -20,9 +20,22 @@ const [primarycolor, setprimarycolor] = useState('');
 const [secondarycolor, setsecondarycolor] = useState('');
 const [tertiarycolor, settertiarycolor] = useState('');
 const [relapsed, setRelapsed] = useState(false);
+const [timeLeft, setTimeLeft] = useState(0); // 24 hours in seconds
+const [detox,setDetox]= useState([]);
+useEffect(() => {
+  if (!timeLeft) setInterval(() => {
+    console.log(timeLeft)
+   setTimeLeft(prev => prev > 0 ? prev + 1 : 0);
+  }, 1000);
+ 
+})
+
+
 AsyncStorage.getItem('secondary').then((value) => {setsecondarycolor(String(value))})
 AsyncStorage.getItem('tertiary').then((value) => {settertiarycolor(String(value))})
-
+const hours = Math.floor(timeLeft / 3600);
+const minutes = Math.floor((timeLeft % 3600) / 60);
+const seconds = timeLeft % 60;
 AsyncStorage.getItem('backgroundcolor').then((value) => {
     console.log(value);
 setcolor(String(value))})
@@ -133,7 +146,11 @@ image:{
         AsyncStorage.getItem('journal').then((value) => {
  
           setJournal(JSON.parse(value));
-      
+          const lastRelapse = new Date(JSON.parse(value)?.find(entry => entry[2] === true)?.[0]) || new Date();
+          console.log('pls',lastRelapse)
+          console.log('Last relapse atej:', ((new Date()).getTime()-lastRelapse.getTime())/1000);
+        //  setDetox(['',lastRelapse])
+          if (timeLeft==0) setTimeLeft(  Math.round( ((new Date()).getTime()-lastRelapse.getTime())/1000 )   )
       })
   AsyncStorage.getItem('username').then((value) => {
     console.log(value);
@@ -163,6 +180,27 @@ image:{
         <View style={{backgroundColor: color1, borderRadius: 20, padding: 20, width: '100%', marginBottom: 20}}>
          
         <Text style={styles.title}>Welcome, {username}!</Text>
+        <View style={{ alignItems: 'center',backgroundColor:color,padding:5,borderRadius:30,alignSelf:'center' ,width:'100%',marginBottom:5}}>
+        <Text style={{ 
+                        fontSize: 55, 
+                        fontFamily: 'HeadingNow',
+                        color: color1 || '#000'
+                      }}>
+                        
+                        Time Since Last Accident
+                      </Text>
+          <View style={{ alignItems: 'center',backgroundColor:secondarycolor,padding:5,borderRadius:30,alignSelf:'center' ,width:'100%'}}>
+                      <Text style={{ 
+                        fontSize: 55, 
+                        fontFamily: 'monospace',
+                        color: color1 || '#000'
+                      }}>
+                        
+                        {`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+                      </Text>
+                    </View>
+                    </View>
+<Text>{'\n'}</Text>
         <View style={{backgroundColor:secondarycolor, width: '100%' ,padding: 20, borderRadius: 20, marginBottom: 20}}>
         
             <Text style={[styles.txt, { position: 'relative', marginBottom: 10 ,color:color1}]}>

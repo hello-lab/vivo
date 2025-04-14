@@ -34,6 +34,8 @@ const Index = () => {
           AsyncStorage.setItem('backgroundpic', 'https://tmp.starryai.com/api/122102/8f5c442f-5a41-4b78-8700-d4f0185f0760.png');
           AsyncStorage.setItem('backgroundpics', JSON.stringify([]));
           AsyncStorage.setItem('apointments', JSON.stringify([]));
+          AsyncStorage.setItem('heartRateHistory', JSON.stringify([]));
+
             AsyncStorage.setItem('journal', JSON.stringify([]));
 
         }
@@ -49,7 +51,7 @@ const Index = () => {
     requestPermissions();
   }, []);
 
-  return  <>  {(showSplash)? <AnimatedSplash onAnimationEnd={() => setShowSplash(false)} />:
+  return  <>  {(showSplash)? <AnimatedSplash onAnimationEnd={() => router.push('/signin')} />:
   <View style={styles.container}>
       
       <Text style={styles.text}>Welcome to Vivo</Text>

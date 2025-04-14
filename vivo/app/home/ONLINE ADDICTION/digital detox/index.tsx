@@ -218,6 +218,7 @@ const seconds = timeLeft % 60;
              style={StyleSheet.absoluteFill}
            />
       <Text style={styles.title}>Welcome, {username}!</Text>
+      
         {detox[0]?
         <>
         <View 

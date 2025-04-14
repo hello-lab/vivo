@@ -14,7 +14,48 @@ export default  function HomeScren() {
   const [backgroundpic, s] = useState('');
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');
+  const [generatedmsg, setGeneratedMessage]=useState('')
+  const fetchGeminiMessage = async (): Promise<string | null> => {
+    try {
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmgd67c4lWZtjBPB99TUsETlJtqmhcUx4',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: 'one line of motivational quote to fight addictions' },
+                ],
+              },
+            ],
+          }),
+        }
+      );
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Response error:', data);
+        throw new Error('Network response was not ok');
+      }
+
+      const newMessage = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (newMessage) {
+        setGeneratedMessage(newMessage.split("")); // update state for UI
+        console.log('Generated message:', newMessage);
+        return newMessage;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching Gemini API message:', error);
+      return null;
+    }
+  };
 AsyncStorage.getItem('backgroundcolor').then((value) => {
     console.log(value);
 setcolor(String(value))})
@@ -26,7 +67,8 @@ AsyncStorage.getItem('accents').then((value) => {
 setcolor1(String(value))})
 const styles = StyleSheet.create({
   fullh:{
-    height: '100%', borderColor: 'red'
+    height: '100%', borderColor: 'red',
+    flex:1
   },
   btn1:{
     position: 'absolute',
@@ -45,9 +87,10 @@ image:{
   container: {
    alignItems: 'center',
      borderColor: 'red',
-    flex: 1,
+  flexGrow:1,
    backgroundColor: color,
     padding: 16,
+    flexDirection:'column'
   },
   title: {
     fontSize: 28,
@@ -68,12 +111,14 @@ image:{
     color: 'black',
   },
   btns:{
+
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: 320,
+    marginTop:10,
   },
   btn:{
-    height: 50,
+    height: 80,
     width: 150,
     backgroundColor: '#91c4f6',
     justifyContent: 'center',
@@ -81,9 +126,10 @@ image:{
     borderRadius: 25,
     borderColor: '#1e5175',
     borderWidth: 2,
+    flexDirection:'row'
     },
   bttn:{
-    height: 50,
+    height: 80,
     width: 150,
     backgroundColor: '#f1adc4',
     justifyContent: 'center',
@@ -109,7 +155,49 @@ image:{
 });
 
  useEffect(() => {
-  
+ 
+  const fetchGeminiMessage = async (): Promise<string | null> => {
+    try {
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDmgd67c4lWZtjBPB99TUsETlJtqmhcUx4',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: 'one line of motivational quote to fight online addictions' },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Response error:', data);
+        throw new Error('Network response was not ok');
+      }
+
+      const newMessage = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (newMessage) {
+        setGeneratedMessage(newMessage); // update state for UI
+        console.log('Generated message:', newMessage);
+        return newMessage;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching Gemini API message:', error);
+      return null;
+    }
+  };
+   fetchGeminiMessage()
     async function fetchData() {
       try{
   AsyncStorage.getItem('username').then((value) => {
@@ -135,9 +223,81 @@ image:{
              style={StyleSheet.absoluteFill}
            />
       <Text style={styles.title}>Welcome, {username}!</Text>
+          <View style={{ alignItems: 'center',backgroundColor:color,padding:5,borderRadius:30,alignSelf:'center' ,width:'100%',marginBottom:5}}>
+                 <Text style={{ 
+                                 fontSize: 55, 
+                                 fontFamily: 'HeadingNow',
+                                 color: color1 || '#000'
+                               }}>
+                                 
+                                 {generatedmsg}
+                               </Text>
+                  
+                             </View>
+          <View style={styles.btns}>
+            <TouchableOpacity 
+              style={styles.bttn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/digital detox')}>
+              <Text style={styles.btnText}>Digital Detox</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.btn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/doomscroll notification')}>
+              <Text style={styles.btnText}>Doomscroll Notification</Text>
+            </TouchableOpacity>
+            
+
+
+            
+          </View>
+          <View style={styles.btns}>
+            
+            <TouchableOpacity 
+              style={styles.btn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/restriction')}>
+              <Text style={styles.btnText}>App Restriction</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.bttn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/routine generation')}>
+              <Text style={styles.btnText}>Routine Generation</Text>
+            </TouchableOpacity>
+
+
+            
+          </View>
+          <View style={styles.btns}>
+            <TouchableOpacity 
+              style={styles.bttn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/Support Media')}>
+              <Text style={styles.btnText}>Support Media</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.btn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/usage analysis')}>
+              <Text style={styles.btnText}>Usage Analysis</Text>
+            </TouchableOpacity>
+            
+
+
+            
+          </View>
+          <View style={styles.btns}>
+            
+            <TouchableOpacity 
+              style={styles.btn}
+              onPress={() => router.push('/home/ONLINE ADDICTION/time saved')}>
+              <Text style={styles.btnText}>Time Saved</Text>
+            </TouchableOpacity>
            
+
+
+            
+          </View>
     </ScrollView>
     </SafeAreaView>
   );
 }
+
+
 

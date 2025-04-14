@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { requestUsagePermission,getUsageLast24Hr,checkPackagePermission, getUsageCustomRange } from 'react-native-app-usage';
-import { PieChart } from "react-native-chart-kit";
+import { BarChart, PieChart, StackedBarChart } from "react-native-chart-kit";
 import { Dimensions } from 'react-native';
 import PieChartt from 'react-native-pie-chart'
 export default  function HomeScren() {
@@ -109,6 +109,10 @@ useEffect(() => {
   const [color, setcolor] = useState('');
   const [color1, setcolor1] = useState('');
   const [primary, setprimary] = useState('');
+  const[daata,setdata]=useState([])
+  const[prevusage,setprev]=useState([])
+  const[curusage,setcur]=useState([])
+
   const screenWidth = Dimensions.get("window").width;
   
           const [pieData, setPieData] = useState([]);
@@ -134,6 +138,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    borderTopRightRadius:15,
+    borderTopLeftRadius:15
+
   },
   columnHeader: {
     fontSize: 16,
@@ -273,6 +280,17 @@ setcolor1(String(value))})
   }
 
     fetchData();}, []);
+    const data={
+    labels: commonapps.map(app => app.packageName.split('.')[app.packageName.split('.').length-1]),
+    legend:['Today','Yesterday'],
+    data: [
+    ...commonapps.map(app =>[Math.ceil( app.currentUsage / (60  *60 *1000)),
+     Math.ceil(app.previousUsage / (60 * 60000))])
+    ],
+    barColors: [
+      "#dfe4ea", "#ced6e0"]
+  }
+console.log(data)
   return (
    
     <SafeAreaView style={styles.container}>
@@ -283,37 +301,31 @@ setcolor1(String(value))})
 
 
   <>
-    <ScrollView horizontal showsVerticalScrollIndicator>
-      <View style={{ flexDirection: 'row', height: 100, alignItems: 'flex-end', paddingHorizontal: 10 }}>
-        {commonapps.map((app, index) => (
-          <View key={app.packageName} style={{ marginHorizontal: 5, width: 40 }}>
-            <View style={{ 
-              height: Math.min(180 * (app.currentUsage / (60 * 60 * 1000)), 180),
-              backgroundColor: `hsl(${(index * 137.5) % 360}, 100%, 70%)`,
-              width: '100%',
-              borderTopLeftRadius: 5,
-              borderTopRightRadius: 5
-            }} />
-            <View style={{ 
-              height: Math.min(180 * (app.previousUsage / (60 * 60 * 1000)), 180),
-              backgroundColor: `hsl(${(index * 137.5) % 360}, 80%, 85%)`,
-              width: '100%',
-              marginTop: 2,
-              borderTopLeftRadius: 5,
-              borderTopRightRadius: 5
-            }} />
-            <Text style={{ 
-              fontSize: 10, 
-              textAlign: 'center', 
-              transform: [{ rotate: '-45deg' }],
-              width: 60,
-              
-            }}>
-              {app.packageName.split('.').pop()}
-            </Text>
-          </View>
-        ))}
-      </View>
+   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+       {commonapps.length>0?
+       <StackedBarChart
+        data={data}
+        width={commonapps.length * 100}
+        height={240}
+        chartConfig={{
+          backgroundColor: color1,
+          backgroundGradientFrom: color1,
+          backgroundGradientTo: color1,
+          decimalPlaces: 1,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          style: {
+            borderRadius: 16
+          }
+        }}
+        style={{
+          marginVertical: 8,
+          borderRadius: 16,
+          height:450
+        }}
+        
+        showValuesOnTopOfBars
+        withHorizontalLabels
+      />:<></>}
     </ScrollView>
   </>
     <ScrollView style={styles.fullh}>

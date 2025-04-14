@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   Animated,
+  Alert,
 } from 'react-native';
 import { Camera, useCameraDevice, useFrameProcessor,useCameraFormat } from 'react-native-vision-camera';
 import FFT from 'fft.js';
@@ -389,12 +390,20 @@ const calculateBpm = (samples) => {
     try {
       const timestamp = new Date().toISOString();
       const newEntry = { meanHeartRate, timestamp };
-      const existingData = AsyncStorage.getItem('heartRateHistory');
+      const existingData = AsyncStorage.getItem('heartRateHistory').then((existingData)=>{
+
+     
       const heartRateHistory = existingData ? JSON.parse(existingData) : [];
       heartRateHistory.push(newEntry);
       AsyncStorage.setItem('heartRateHistory', JSON.stringify(heartRateHistory));
-      console.log('Mean heart rate saved successfully!',heartRateHistory);
+      console.log('Mean heart rate saved successfully!',existingData);
+      let pk='Calm'
+      if (meanHeartRate>100)
+        pk="Stressed"
+      Alert.alert("Panic Level",pk) })
     } catch (error) {
+      const timestamp = new Date().toISOString();
+      AsyncStorage.setItem('heartRateHistory', JSON.stringify([{ meanHeartRate, timestamp }]));
       console.error('Failed to save mean heart rate:', error);
     }
   };
@@ -432,7 +441,7 @@ const calculateBpm = (samples) => {
   return (
     <View style={styles.container}>
       {/* Circular Progress Bar */}
-      
+      <button onClick={() => this.forceUpdate()}>Force Re-render</button>
 
       {/* Animated Camera View */}
       {cameraVisible && (
@@ -474,10 +483,18 @@ const calculateBpm = (samples) => {
         <TouchableOpacity style={styles.startButton} onPress={startTimer}>
           <Text style={styles.buttonText}>▶️ Start</Text>
         </TouchableOpacity>
-      ) : (
+      ) : (<View style={{flexDirection:'row'}}>
+      <TouchableOpacity style={styles.button} onPress={toggleTorch}>
+          <Text style={styles.buttonText}>
+            {torchOn ? '🔦 Torch Off' : '💡 Torch On'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={resetBPM}>
+          <Text style={styles.buttonText}>🔄 Reset</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.stopButton} onPress={stopTimer}>
           <Text style={styles.buttonText}>⏹️ Stop</Text>
-        </TouchableOpacity>
+        </TouchableOpacity></View>
       )}
 
       {/* BPM Display */}
@@ -494,14 +511,7 @@ const calculateBpm = (samples) => {
 
       {/* Torch and Reset Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={toggleTorch}>
-          <Text style={styles.buttonText}>
-            {torchOn ? '🔦 Torch Off' : '💡 Torch On'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={resetBPM}>
-          <Text style={styles.buttonText}>🔄 Reset</Text>
-        </TouchableOpacity>
+        
         <CircularProgress
           value={(elapsedTime ) / 1000}
           radius={20}
@@ -576,9 +586,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonContainer: {
+    
     fontFamily: 'HeadingNow',
 position: 'absolute',
-bottom: 0,
+left:-150,
+bottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     width: '100%',
@@ -587,9 +599,10 @@ bottom: 0,
   },
   button: {
     fontFamily: 'HeadingNow',
-
+    marginTop: 20,
     backgroundColor: '#576574',
     padding: 15,
+    marginRight:5,
     borderRadius: 10,
   },
   buttonText: {

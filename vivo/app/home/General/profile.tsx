@@ -173,6 +173,7 @@ AsyncStorage.getItem('apointments').then((value) => {
                 })
                 AsyncStorage.getItem('heartRateHistory').then((value) => {
                     setHeartrate(value ? JSON.parse(value) : [])
+                    console.log(value)
                 })
                     const existingData = AsyncStorage.getItem('heartRateHistory');
                 

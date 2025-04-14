@@ -8,7 +8,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginpic from '../../assets/images/loginpic.png';
 import { useRouter } from 'expo-router';
 
+
+
+
+
+
 export default function AuthScreen() {
+
+
+
+
+
+  AsyncStorage.getItem('token').then((val)=> {if (val){ router.replace('/home/General')}})
+ 
+  
+
+
+
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -20,7 +36,7 @@ export default function AuthScreen() {
     console.log("Login button pressed");
     AsyncStorage.setItem('username', username);
     AsyncStorage.setItem('email', email);
-    router.replace('/home/General');
+   // router.replace('/home/General');
     try {
       const response = await fetch(server + 'login', {
         method: 'POST',
@@ -28,10 +44,12 @@ export default function AuthScreen() {
         body: JSON.stringify({ username, password }),
       });
       const data = await response.json();
-      if (data.token) {
-        AsyncStorage.setItem('token', data.token);
+      if (data.message=="Login successful") {
+        AsyncStorage.setItem('token', String(Math.random()));
         Alert.alert('Login Success');
+        router.replace('/home/General')
       } else {
+        console.error(data.message);
         Alert.alert('Login Failed', data.data || 'An error occurred');
       }
     } catch (error) {
@@ -49,6 +67,7 @@ export default function AuthScreen() {
         body: JSON.stringify({ username, email, password }),
       });
       const data = await response.json();
+      console.log(data)
       Alert.alert(data.data || 'Signup successful');
     } catch (error) {
       console.error(error);
